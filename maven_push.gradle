@@ -1,91 +1,70 @@
-apply plugin: 'maven'
-apply plugin: 'signing'
+apply plugin: 'maven-publish'
 
-def isReleaseBuild() {
-    return project.version.contains("SNAPSHOT") == false
-}
+afterEvaluate {
 
-def sonatypeRepositoryUrl
-if (isReleaseBuild()) {
-    sonatypeRepositoryUrl = hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-} else {
-    sonatypeRepositoryUrl = hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-            : "https://oss.sonatype.org/content/repositories/snapshots"
+    def localProps = new Properties()
+    localProps.load(rootProject.file('local.properties').newDataInputStream())
 
-}
+    task androidJavadocs(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        classpath += files(android.libraryVariants.collect { variant -> variant.javaCompileProvider.get().classpath.files })
+    }
 
-def repositoryUsername = hasProperty('SONATYPE_USER') ? SONATYPE_USER : System.getenv('SONATYPE_USER');
-def repositoryPassword = hasProperty('SONATYPE_PASS') ? SONATYPE_PASS : System.getenv('SONATYPE_PASS');
+    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+        archiveClassifier.set('javadoc')
+        from androidJavadocs.destinationDir
+    }
 
-afterEvaluate { project ->
-    uploadArchives {
+    task androidSourcesJar(type: Jar) {
+        archiveClassifier.set('sources')
+        from android.sourceSets.main.java.srcDirs
+    }
+
+    publishing {
         repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-                pom.artifactId = POM_ARTIFACT_ID
-
-                repository(url: sonatypeRepositoryUrl) {
-                    authentication(userName: repositoryUsername, password: repositoryPassword)
+            maven {
+                name = "GitHubPackages"
+                url = "https://maven.pkg.github.com/lisb/box-android-browse-sdk"
+                credentials {
+                    username = localProps["gpr.user"] ?: System.getenv("GPR_USER")
+                    password = localProps["gpr.key"] ?: System.getenv("GPR_KEY")
                 }
+            }
+        }
+        publications {
+            release(MavenPublication) {
+                from components.release
+                artifact tasks.androidSourcesJar
+                artifact tasks.androidJavadocsJar
+                groupId = "com.lisb.android.box"
+                artifactId = POM_ARTIFACT_ID
+                version = "3.0.2"
 
-                pom.project {
-                    name POM_NAME
-                    packaging POM_PACKAGING
-                    description "Box Android Browse SDK"
-                    url "https://github.com/box/box-android-browse-sdk"
-
+                pom {
+                    name = POM_NAME
+                    description = "LisB Fork of Box Android Browse SDK"
+                    url = "https://github.com/lisb/box-android-browse-sdk"
                     scm {
-                        url "https://github.com/box/box-android-browse-sdk"
-                        connection "scm:git@github.com:box/box-android-browse-sdk.git"
+                        url = "https://github.com/lisb/box-android-browse-sdk"
+                        connection = "scm:git@github.com:lisb/box-android-browse-sdk.git"
                     }
 
                     licenses {
                         license {
-                            name "The Apache Software License, Version 2.0"
-                            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                            distribution "repo"
+                            name = "The Apache Software License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
                         }
                     }
 
                     developers {
                         developer {
-                            id repositoryUsername
-                            name "Box Android Team"
+                            id = "lisb"
+                            name = "L is B corp."
                         }
                     }
                 }
             }
         }
-    }
-
-    signing {
-        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
-        sign configurations.archives
-    }
-
-    task androidJavadocs(type: Javadoc) {
-        source = android.sourceSets.main.java.srcDirs
-        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-        classpath += files(android.libraryVariants.collect { variant -> variant.javaCompile.classpath.files })
-    }
-
-    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-        classifier = 'javadoc'
-        //basename = artifact_id
-        from androidJavadocs.destinationDir
-    }
-
-    task androidSourcesJar(type: Jar) {
-        classifier = 'sources'
-        //basename = artifact_id
-        from android.sourceSets.main.java.srcDirs
-    }
-
-    artifacts {
-        //archives packageReleaseJar
-        archives androidSourcesJar
-        archives androidJavadocsJar
     }
 }
