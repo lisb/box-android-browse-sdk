@@ -39,11 +39,11 @@ afterEvaluate {
                 artifact tasks.androidJavadocsJar
                 groupId = "com.lisb.android.box"
                 artifactId = POM_ARTIFACT_ID
-                version = "3.0.2"
+                version = "3.0.3-SNAPSHOT"
 
                 pom {
                     name = POM_NAME
-                    description = "LisB Fork of Box Android Browse SDK"
+                    description = "LisB Fork of Box Android Browse SDK 3.0.2"
                     url = "https://github.com/lisb/box-android-browse-sdk"
                     scm {
                         url = "https://github.com/lisb/box-android-browse-sdk"
