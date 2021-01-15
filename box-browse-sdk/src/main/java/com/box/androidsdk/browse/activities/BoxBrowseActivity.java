@@ -183,7 +183,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
         // All fragments will always navigate into folders
         BoxBrowseFolderFragment browseFolderFragment = createBrowseFolderFragment(boxFolder, mSession);
         trans.replace(R.id.box_browsesdk_fragment_container, browseFolderFragment);
-        if (getSupportFragmentManager().getBackStackEntryCount() > 0 || getSupportFragmentManager().getFragments() != null) {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0 || !getSupportFragmentManager().getFragments().isEmpty()) {
             trans.addToBackStack(BoxBrowseFragment.TAG);
         }
         trans.commit();
