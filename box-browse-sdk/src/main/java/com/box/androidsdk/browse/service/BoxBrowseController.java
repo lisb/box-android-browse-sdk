@@ -7,18 +7,23 @@ import android.widget.Toast;
 
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.uidata.ThumbnailManager;
+import com.box.androidsdk.content.BoxApiBookmark;
 import com.box.androidsdk.content.BoxApiFile;
 import com.box.androidsdk.content.BoxApiFolder;
 import com.box.androidsdk.content.BoxApiSearch;
 import com.box.androidsdk.content.BoxConfig;
 import com.box.androidsdk.content.BoxException;
 import com.box.androidsdk.content.BoxFutureTask;
+import com.box.androidsdk.content.models.BoxBookmark;
+import com.box.androidsdk.content.models.BoxFile;
 import com.box.androidsdk.content.models.BoxFolder;
+import com.box.androidsdk.content.models.BoxItem;
 import com.box.androidsdk.content.models.BoxRepresentation;
 import com.box.androidsdk.content.models.BoxSession;
 import com.box.androidsdk.content.models.BoxUser;
 import com.box.androidsdk.content.requests.BoxCacheableRequest;
 import com.box.androidsdk.content.requests.BoxRequest;
+import com.box.androidsdk.content.requests.BoxRequestUpdateSharedItem;
 import com.box.androidsdk.content.requests.BoxRequestsFile;
 import com.box.androidsdk.content.requests.BoxRequestsFolder;
 import com.box.androidsdk.content.requests.BoxRequestsSearch;
@@ -53,6 +58,7 @@ public class BoxBrowseController implements BrowseController {
 
     protected final BoxApiFile mFileApi;
     protected final BoxApiFolder mFolderApi;
+    protected final BoxApiBookmark mBookmarkApi;
     protected final BoxApiSearch mSearchApi;
     protected final BoxSession mSession;
     protected final ThumbnailManager mThumbnailManager;
@@ -70,10 +76,11 @@ public class BoxBrowseController implements BrowseController {
      * @param apiFolder the api folder
      * @param apiSearch the api search
      */
-    public BoxBrowseController(BoxSession session, BoxApiFile apiFile, BoxApiFolder apiFolder, BoxApiSearch apiSearch) {
+    public BoxBrowseController(BoxSession session, BoxApiFile apiFile, BoxApiFolder apiFolder, BoxApiBookmark apiBookmark, BoxApiSearch apiSearch) {
         mSession = session;
         mFileApi = apiFile;
         mFolderApi = apiFolder;
+        mBookmarkApi = apiBookmark;
         mSearchApi = apiSearch;
         mThumbnailManager = createThumbnailManager(mSession);
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
@@ -93,7 +100,8 @@ public class BoxBrowseController implements BrowseController {
     public BoxBrowseController(BoxSession session) {
         mSession = session;
         mFileApi = new BoxApiFile(mSession);
-        mFolderApi =  new BoxApiFolder(mSession);
+        mFolderApi = new BoxApiFolder(mSession);
+        mBookmarkApi = new BoxApiBookmark((mSession));
         mSearchApi =  new BoxApiSearch(mSession);
         mThumbnailManager = createThumbnailManager(mSession);
     }
@@ -133,6 +141,25 @@ public class BoxBrowseController implements BrowseController {
     @Override
     public BoxRequestsFile.DownloadRepresentation getRepresentationThumbnailRequest(String fileId, BoxRepresentation representation, File downloadFile) {
         return mFileApi.getDownloadRepresentationRequest(fileId, downloadFile, representation);
+    }
+
+    /**
+     * Gets shared link update request for given box item
+     *
+     * @param boxItem Box item object passed by the caller (eg. file, folder and bookmark)
+     * @return The shared link update request
+     */
+    @Override
+    public BoxRequestUpdateSharedItem getCreatedSharedLinkRequest(BoxItem boxItem){
+        if (boxItem instanceof BoxFile) {
+            return mFileApi.getCreateSharedLinkRequest(boxItem.getId());
+        } else if (boxItem instanceof BoxFolder) {
+            return mFolderApi.getCreateSharedLinkRequest(boxItem.getId());
+        } else if (boxItem instanceof BoxBookmark) {
+            return mBookmarkApi.getCreateSharedLinkRequest(boxItem.getId());
+        }
+        // should never hit this scenario.
+        return null;
     }
 
     @Override
