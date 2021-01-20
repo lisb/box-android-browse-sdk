@@ -11,20 +11,21 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.adapters.BoxItemAdapter;
@@ -155,7 +156,6 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
         getActivity().registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         getLocalBroadcastManager().registerReceiver(mBroadcastReceiver, getIntentFilter());
         if (mItems == null) {
-            mProgress.setVisibility(View.VISIBLE);
             loadItems();
         } else {
             // this call must be made after registering the receiver in order to handle very fast responses.
@@ -188,9 +188,6 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
      * @param intent the intent
      */
     protected void handleResponse(BoxResponseIntent intent) {
-        if (!intent.isSuccess()) {
-            mController.onError(getActivity(), intent.getResponse());
-        }
         if (intent.getAction().equals(BoxRequestsFile.DownloadThumbnail.class.getName())) {
             onDownloadedThumbnail(intent);
         }
@@ -263,10 +260,10 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
     private void updateUI() {
         if (mItems == null) {
             // UI should not be updated before the first load
-            return;
+            setEmptyState(false);
+        } else {
+            setEmptyState(mAdapter.getItemCount() == 0);
         }
-
-        setEmptyState(mAdapter.getItemCount() == 0);
 
     }
 
@@ -301,7 +298,9 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
 
     @Override
     public void onRefresh() {
-        mSwipeRefresh.setRefreshing(true);
+        if (mSwipeRefresh != null) {
+            mSwipeRefresh.setRefreshing(true);
+        }
         loadItems();
     }
 
@@ -320,7 +319,10 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
     public BrowseController getController() {
         if (mController == null) {
             String userId = getArguments().getString(ARG_USER_ID);
-            mController = new BoxBrowseController(new BoxSession(getActivity(), userId)).setCompletedListener(new CompletionListener(LocalBroadcastManager.getInstance(getActivity())));
+            final LocalBroadcastManager bm = LocalBroadcastManager.getInstance(getActivity());
+            mController = new BoxBrowseController(new BoxSession(getActivity(), userId))
+                    .setCompletedListener(new CompletionListener(bm, false))
+                    .setCacheCompletedListener(new CompletionListener(bm, true));
         }
 
         return mController;
@@ -413,14 +415,6 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
         FragmentActivity activity = getActivity();
         if (activity == null) {
             return;
-        }
-
-        if (mProgress != null) {
-            mProgress.setVisibility(View.GONE);
-        }
-
-        if (mSwipeRefresh != null) {
-            mSwipeRefresh.setRefreshing(false);
         }
 
         ArrayList<BoxItem> filteredItems = new ArrayList<BoxItem>();
