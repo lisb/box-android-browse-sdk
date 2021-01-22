@@ -121,7 +121,7 @@ public class BoxBrowseController implements BrowseController {
 
     @Override
     public BoxRequestsSearch.Search getSearchRequest(String query) {
-        return mSearchApi.getSearchRequest(query);
+        return mSearchApi.getSearchRequest(query).setFields(BoxFolder.FIELD_PERMISSIONS);
     }
 
     @Override
