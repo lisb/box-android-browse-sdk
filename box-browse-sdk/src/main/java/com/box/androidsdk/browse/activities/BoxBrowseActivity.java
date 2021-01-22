@@ -14,6 +14,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.MenuItemCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.adapters.BoxRecentSearchAdapter;
 import com.box.androidsdk.browse.fragments.BoxBrowseFolderFragment;
@@ -39,13 +46,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.MenuItemCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 /**
  * Box browse activity
  * This is the base activity BoxFolderActivity and BoxFileActivity. It implements the common functionality like initiating search feature, handling navigation etc.
@@ -54,8 +54,6 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
     protected static final String TAG = BoxBrowseActivity.class.getName();
 
     private static final ConcurrentLinkedQueue<BoxResponse> RESPONSE_QUEUE = new ConcurrentLinkedQueue<BoxResponse>();
-    private static final String RESTORE_SEARCH = "restoreSearch";
-    private static final String SEARCH_QUERY = "searchQuery";
     private static ThreadPoolExecutor mApiExecutor;
     private MenuItem mSearchViewMenuItem;
     protected BrowseController mController;
@@ -70,6 +68,8 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
 
     private BoxFolder mCurrentBoxFolder;
 
+    private int backStackEntryCount;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mController = new BoxBrowseController(mSession, new BoxApiFile(mSession),
@@ -83,6 +83,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
             mCurrentBoxFolder = (BoxFolder) getIntent().getSerializableExtra(EXTRA_ITEM);
         }
 
+        backStackEntryCount = getSupportFragmentManager().getBackStackEntryCount();
         getSupportFragmentManager().addOnBackStackChangedListener(this);
     }
 
@@ -237,16 +238,17 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.box_browsesdk_fragment_container);
         mSearchViewMenuItem = menu.findItem(R.id.box_browsesdk_action_search);
         mSearchView = (BoxSearchView) MenuItemCompat.getActionView(mSearchViewMenuItem);
 
-        if (fragment instanceof BoxSearchFragment) {
+        final Fragment f = getSupportFragmentManager()
+                .findFragmentById(R.id.box_browsesdk_fragment_container);
+        final boolean isSearchMode = f instanceof BoxSearchFragment;
+        if (isSearchMode) {
+            // On this Activity restored
             mSearchView.setIconified(false);
-            mSearchView.setSearchTerm(((BoxSearchFragment)fragment).getSearchQuery());
+            mSearchView.setSearchTerm(((BoxSearchFragment)f).getSearchQuery());
         }
-
         enableDisableRecentView();
         mSearchView.setOnBoxSearchListener(this);
 
@@ -273,9 +275,6 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
         if (mSearchViewMenuItem == null) {
             return;
         }
-        BoxSearchView searchView = (BoxSearchView) MenuItemCompat.getActionView(mSearchViewMenuItem);
-        outState.putBoolean(RESTORE_SEARCH, !searchView.isIconified());
-        outState.putString(SEARCH_QUERY, searchView.getQuery().toString());
     }
 
     private void clearSearch() {
@@ -406,9 +405,21 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
 
     @Override
     public void onBackStackChanged() {
-        invalidateOptionsMenu();
-        // Update title while navigating folders.
-        setTitle(getCurrentFolder());
+        final Fragment f = getSupportFragmentManager()
+                .findFragmentById(R.id.box_browsesdk_fragment_container);
+        final boolean isSearchMode = f instanceof BoxSearchFragment;
+        final int newBackStackEntryCount = getSupportFragmentManager().getBackStackEntryCount();
+        if (!isSearchMode) {
+            invalidateOptionsMenu();
+            // Update title while navigating folders.
+            setTitle(getCurrentFolder());
+            hideKeyboard();
+        } else if (newBackStackEntryCount < backStackEntryCount) {
+            // backed
+            mSearchView.setIconified(false);
+            mSearchView.setSearchTerm(((BoxSearchFragment)f).getSearchQuery());
+        }
+        backStackEntryCount = newBackStackEntryCount;
     }
 
     /**
