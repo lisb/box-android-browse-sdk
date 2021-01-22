@@ -30,6 +30,7 @@ import com.box.androidsdk.content.requests.BoxResponse;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -274,7 +275,9 @@ public class BoxSearchFragment extends BoxBrowseFragment {
     @Override
     protected void loadItems() {
         if (mRequest != null) {
-            mProgress.setVisibility(View.VISIBLE);
+            if (mItems == null) {
+                mProgress.setVisibility(View.VISIBLE);
+            }
             mOffset = 0;
             mRequest.setLimit(mLimit)
                     .setOffset(mOffset)
@@ -366,8 +369,6 @@ public class BoxSearchFragment extends BoxBrowseFragment {
         if (activity == null) {
             return;
         }
-        mSearchFiltersHeader.setVisibility(View.VISIBLE);
-
         mItems = new ArrayList<BoxItem>();
         mItems.addAll(items);
         if (mItems.size() > 0 && !(mItems.get(0) instanceof ResultsHeader)) {
@@ -437,17 +438,15 @@ public class BoxSearchFragment extends BoxBrowseFragment {
     protected void onItemsFetched(BoxResponse response) {
         if (response.getRequest().equals(mRequest)) {
             if (!response.isSuccess()) {
+                mAdapter.remove(Collections.singletonList(BoxSearchAdapter.LOAD_MORE_ID));
                 mProgress.setVisibility(View.GONE);
                 checkConnectivity();
                 Toast.makeText(getContext(),
                         R.string.box_browsesdk_problem_performing_search,
                         Toast.LENGTH_LONG).show();
             } else {
-                ArrayList<String> removeIds = new ArrayList<String>(1);
-                removeIds.add(BoxSearchAdapter.LOAD_MORE_ID);
-                mAdapter.remove(removeIds);
-
                 if (response.getResult() instanceof BoxIteratorItems) {
+                    mAdapter.remove(Collections.singletonList(BoxSearchAdapter.LOAD_MORE_ID));
                     mProgress.setVisibility(View.GONE);
                     BoxIteratorItems items = (BoxIteratorItems) response.getResult();
 
