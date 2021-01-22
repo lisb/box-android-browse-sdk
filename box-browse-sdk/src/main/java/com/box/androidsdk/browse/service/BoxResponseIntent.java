@@ -16,21 +16,30 @@ import com.box.androidsdk.content.requests.BoxResponse;
  */
 public class BoxResponseIntent<E extends BoxObject> extends Intent {
     private final BoxResponse<E> mResponse;
+    private final boolean mFromCache;
 
     /**
      * Instantiates a new Box response intent.
      *
      * @param response the response
      */
-    public BoxResponseIntent(BoxResponse<E> response) {
+    public BoxResponseIntent(BoxResponse<E> response, boolean fromCache) {
         mResponse = response;
+        mFromCache = fromCache;
         if (mResponse.getRequest() != null) {
             setAction(mResponse.getRequest().getClass().getName());
         }
     }
 
     /**
-     * Is success boolean. returns truw if the request was successful
+     * Return true if the response was gotten from cache.
+     */
+    public boolean isFromCache() {
+        return mFromCache;
+    }
+
+    /**
+     * Is success boolean. returns true if the request was successful
      *
      * @return the boolean
      */
@@ -83,6 +92,7 @@ public class BoxResponseIntent<E extends BoxObject> extends Intent {
     public void writeToParcel(Parcel out, int flags) {
         super.writeToParcel(out, flags);
         out.writeSerializable(mResponse);
+        out.writeInt(mFromCache ? 1 : 0);
     }
 
     public static final Parcelable.Creator<BoxResponseIntent> CREATOR = new Creator<BoxResponseIntent>() {
@@ -100,6 +110,7 @@ public class BoxResponseIntent<E extends BoxObject> extends Intent {
     private BoxResponseIntent(Parcel in) {
         readFromParcel(in);
         mResponse = (BoxResponse) in.readSerializable();
+        mFromCache = in.readInt() != 0;
     }
 }
 

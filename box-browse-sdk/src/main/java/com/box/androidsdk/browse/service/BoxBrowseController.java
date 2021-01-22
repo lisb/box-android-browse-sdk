@@ -3,9 +3,9 @@ package com.box.androidsdk.browse.service;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
-import android.widget.Toast;
 
-import com.box.androidsdk.browse.R;
+import androidx.collection.LruCache;
+
 import com.box.androidsdk.browse.uidata.ThumbnailManager;
 import com.box.androidsdk.content.BoxApiBookmark;
 import com.box.androidsdk.content.BoxApiFile;
@@ -27,7 +27,6 @@ import com.box.androidsdk.content.requests.BoxRequestUpdateSharedItem;
 import com.box.androidsdk.content.requests.BoxRequestsFile;
 import com.box.androidsdk.content.requests.BoxRequestsFolder;
 import com.box.androidsdk.content.requests.BoxRequestsSearch;
-import com.box.androidsdk.content.requests.BoxResponse;
 import com.box.androidsdk.content.utils.BoxLogUtils;
 import com.eclipsesource.json.JsonArray;
 
@@ -39,8 +38,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import androidx.collection.LruCache;
 
 /***
  * Default implementation for the {@link BrowseController}.
@@ -63,6 +60,7 @@ public class BoxBrowseController implements BrowseController {
     protected final BoxSession mSession;
     protected final ThumbnailManager mThumbnailManager;
     protected BoxFutureTask.OnCompletedListener mListener;
+    protected BoxFutureTask.OnCompletedListener mCachedListener;
     protected static final int BITMAP_CACHE_DEFAULT_SIZE = 10000;
 
     protected BitmapLruCache mThumbnailCache = new BitmapLruCache(BITMAP_CACHE_DEFAULT_SIZE);
@@ -170,8 +168,8 @@ public class BoxBrowseController implements BrowseController {
         if (BoxConfig.getCache() != null && request instanceof BoxCacheableRequest){
             try {
                 BoxFutureTask cacheTask = ((BoxCacheableRequest) request).toTaskForCachedResult();
-                if (mListener != null){
-                    cacheTask.addOnCompletedListener(mListener);
+                if (mCachedListener != null){
+                    cacheTask.addOnCompletedListener(mCachedListener);
                 }
                 getApiExecutor().execute(cacheTask);
             } catch (BoxException e){
@@ -198,12 +196,9 @@ public class BoxBrowseController implements BrowseController {
     }
 
     @Override
-    public void onError(Context context, BoxResponse response) {
-        if (response.getRequest() instanceof BoxRequestsFolder.GetFolderWithAllItems) {
-            Toast.makeText(context, R.string.box_browsesdk_problem_fetching_folder, Toast.LENGTH_LONG);
-        } else if (response.getRequest() instanceof BoxRequestsSearch.Search) {
-            Toast.makeText(context, R.string.box_browsesdk_problem_performing_search, Toast.LENGTH_LONG);
-        }
+    public BrowseController setCacheCompletedListener(BoxFutureTask.OnCompletedListener listener) {
+        mCachedListener = listener;
+        return this;
     }
 
     @Override
