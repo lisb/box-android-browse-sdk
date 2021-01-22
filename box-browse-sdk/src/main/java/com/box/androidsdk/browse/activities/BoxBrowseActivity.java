@@ -23,6 +23,7 @@ import com.box.androidsdk.browse.fragments.OnUpdateListener;
 import com.box.androidsdk.browse.service.BoxBrowseController;
 import com.box.androidsdk.browse.service.BrowseController;
 import com.box.androidsdk.browse.uidata.BoxSearchView;
+import com.box.androidsdk.content.BoxApiBookmark;
 import com.box.androidsdk.content.BoxApiFile;
 import com.box.androidsdk.content.BoxApiFolder;
 import com.box.androidsdk.content.BoxApiSearch;
@@ -57,7 +58,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
     private static final String SEARCH_QUERY = "searchQuery";
     private static ThreadPoolExecutor mApiExecutor;
     private MenuItem mSearchViewMenuItem;
-    private BrowseController mController;
+    protected BrowseController mController;
     private OnUpdateListener mUpdateListener;
 
     private BoxSearchView mSearchView;
@@ -73,6 +74,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
         super.onCreate(savedInstanceState);
         mController = new BoxBrowseController(mSession, new BoxApiFile(mSession),
                 new BoxApiFolder(mSession),
+                new BoxApiBookmark(mSession),
                 new BoxApiSearch(mSession));
 
         if (savedInstanceState != null) {

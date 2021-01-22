@@ -6,9 +6,11 @@ import androidx.collection.LruCache;
 
 import com.box.androidsdk.browse.uidata.ThumbnailManager;
 import com.box.androidsdk.content.BoxFutureTask;
+import com.box.androidsdk.content.models.BoxItem;
 import com.box.androidsdk.content.models.BoxRepresentation;
 import com.box.androidsdk.content.models.BoxUser;
 import com.box.androidsdk.content.requests.BoxRequest;
+import com.box.androidsdk.content.requests.BoxRequestUpdateSharedItem;
 import com.box.androidsdk.content.requests.BoxRequestsFile;
 import com.box.androidsdk.content.requests.BoxRequestsFolder;
 import com.box.androidsdk.content.requests.BoxRequestsSearch;
@@ -58,6 +60,8 @@ public interface BrowseController {
     BoxRequestsFile.DownloadRepresentation getRepresentationThumbnailRequest(String fileId,
                                                                              BoxRepresentation representation,
                                                                              File downloadFile);
+
+    BoxRequestUpdateSharedItem getCreatedSharedLinkRequest(BoxItem boxItem);
 
     /***
      * Executes the request using the appropriate executor

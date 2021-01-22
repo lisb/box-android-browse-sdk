@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.fragments.BoxBrowseFragment;
 import com.box.androidsdk.browse.fragments.BoxCreateFolderFragment;
@@ -18,8 +20,8 @@ import com.box.androidsdk.content.models.BoxFolder;
 import com.box.androidsdk.content.models.BoxItem;
 import com.box.androidsdk.content.models.BoxIterator;
 import com.box.androidsdk.content.models.BoxSession;
+import com.box.androidsdk.content.requests.BoxRequestUpdateSharedItem;
 import com.box.androidsdk.content.requests.BoxRequestsFolder;
-import com.box.androidsdk.content.requests.BoxRequestsSearch;
 import com.box.androidsdk.content.requests.BoxResponse;
 import com.box.androidsdk.content.utils.SdkUtils;
 import com.eclipsesource.json.JsonArray;
@@ -126,11 +128,19 @@ public class BoxBrowseFolderActivity extends BoxBrowseActivity implements View.O
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent();
-        BoxFolder curFolder = getCurrentFolder();
-        if (curFolder != null) {
-            JsonObject jsonObject = curFolder.toJsonObject();
-            JsonValue obj = jsonObject.get(BoxFolder.FIELD_ITEM_COLLECTION);
+        final BoxFolder curFolder = getCurrentFolder();
+        if (curFolder == null || (curFolder.getSharedLink() != null && curFolder.getSharedLink().getURL() != null)) {
+            finishWithResult(curFolder);
+        } else {
+            getApiExecutor(getApplication()).execute(mController.getCreatedSharedLinkRequest(curFolder).toTask());
+        }
+    }
+
+    private void finishWithResult(@Nullable BoxFolder folder) {
+        final Intent intent = new Intent();
+        if (folder != null) {
+            final JsonObject jsonObject = folder.toJsonObject();
+            final JsonValue obj = jsonObject.get(BoxFolder.FIELD_ITEM_COLLECTION);
             if (obj != null && !obj.isNull()) {
                 obj.asObject().set(BoxIterator.FIELD_ENTRIES, new JsonArray());
             }
@@ -142,24 +152,40 @@ public class BoxBrowseFolderActivity extends BoxBrowseActivity implements View.O
 
     @Override
     public void handleBoxResponse(BoxResponse response) {
-        if (response.isSuccess()) {
-            if (response.getRequest() instanceof BoxRequestsFolder.CreateFolder) {
+        if (response.getRequest() instanceof BoxRequestsFolder.CreateFolder) {
+            if (response.isSuccess()) {
                 BoxBrowseFragment browseFrag = getTopBrowseFragment();
                 if (browseFrag != null) {
                     browseFrag.onRefresh();
                 }
+            } else {
+                int resId = R.string.box_browsesdk_network_error;
+                if (response.getException() instanceof BoxException) {
+                    if (((BoxException) response.getException()).getResponseCode() == HttpURLConnection.HTTP_CONFLICT) {
+                        resId = R.string.box_browsesdk_create_folder_conflict;
+                    } else {
 
-            }
-        } else {
-            int resId = R.string.box_browsesdk_network_error;
-            if (response.getException() instanceof BoxException) {
-                if (((BoxException) response.getException()).getResponseCode() == HttpURLConnection.HTTP_CONFLICT) {
-                    resId = R.string.box_browsesdk_create_folder_conflict;
-                } else {
-
+                    }
                 }
+                Toast.makeText(this, resId, Toast.LENGTH_LONG).show();
             }
-            Toast.makeText(this, resId, Toast.LENGTH_LONG).show();
+        } else if (response.getRequest() instanceof BoxRequestUpdateSharedItem) {
+            if (response.isSuccess()) {
+                finishWithResult((BoxFolder) response.getResult());
+            } else {
+                if (response.getException() instanceof BoxException) {
+                    int responseCode = ((BoxException) response.getException()).getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                        return;
+                    }
+
+                    if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
+                        Toast.makeText(this, R.string.box_sharesdk_insufficient_permissions, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
+                Toast.makeText(this, R.string.box_sharesdk_unable_to_modify_toast, Toast.LENGTH_LONG).show();
+            }
         }
     }
 

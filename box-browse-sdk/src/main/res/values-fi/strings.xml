@@ -49,4 +49,6 @@
     <string description="Label for setting to search for files with size in given range" name="item_size_25_to_100">25–100 Mt</string>
     <string description="Label for setting to search for files with size in given range" name="item_size_100_to_1000">100&#x00a0;Mt – 1&#x00a0;Gt</string>
     <string desctiption="If user has selected some search filters, we show the same as a string. This is the delimiter for the same. For example this may be shown as 'PDF, Image, Audio, Last Week, 1-5 MB'. ', ' is picked from this string as a delimiter" name="search_filter_label_delimiter">,</string>
+    <string name="box_sharesdk_insufficient_permissions">Sinulla ei ole riittäviä käyttöoikeuksia tämän toiminnon suorittamiseen.</string>
+    <string name="box_sharesdk_unable_to_modify_toast">Jakamislinkin muokkauksessa/luomisessa ilmeni ongelma.</string>
 </resources>
