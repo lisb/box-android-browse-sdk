@@ -93,6 +93,7 @@ public class BoxSearchFragment extends BoxBrowseFragment {
 
         mItemTypeToExtensions = new HashMap<BoxSearchFilters.ItemType, String[]>();
         mItemTypeToExtensions.put(BoxSearchFilters.ItemType.Audio, ThumbnailManager.AUDIO_EXTENSIONS_ARRAY);
+        mItemTypeToExtensions.put(BoxSearchFilters.ItemType.Autocad, ThumbnailManager.AUTOCAD_EXTENSIONS_ARRAY);
         mItemTypeToExtensions.put(BoxSearchFilters.ItemType.BoxNote, ThumbnailManager.BOXNOTE_EXTENSIONS_ARRAY);
         mItemTypeToExtensions.put(BoxSearchFilters.ItemType.Document, ThumbnailManager.DOCUMENTS_EXTENSIONS_ARRAY);
         mItemTypeToExtensions.put(BoxSearchFilters.ItemType.Image, ThumbnailManager.IMAGE_EXTENSIONS_ARRAY);
