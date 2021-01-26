@@ -66,8 +66,6 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
     private View mRecentSearchesHeader;
     private View mRecentSearchesFooter;
 
-    private BoxFolder mCurrentBoxFolder;
-
     private int backStackEntryCount;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,13 +74,6 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
                 new BoxApiFolder(mSession),
                 new BoxApiBookmark(mSession),
                 new BoxApiSearch(mSession));
-
-        if (savedInstanceState != null) {
-            mCurrentBoxFolder = (BoxFolder) savedInstanceState.getSerializable(EXTRA_ITEM);
-        } else if (getIntent() != null) {
-            mCurrentBoxFolder = (BoxFolder) getIntent().getSerializableExtra(EXTRA_ITEM);
-        }
-
         backStackEntryCount = getSupportFragmentManager().getBackStackEntryCount();
         getSupportFragmentManager().addOnBackStackChangedListener(this);
     }
@@ -299,8 +290,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
 
         // If click is on a folder, navigate to that folder
         if (item instanceof BoxFolder) {
-            mCurrentBoxFolder = (BoxFolder) item;
-            handleBoxFolderClicked(mCurrentBoxFolder);
+            handleBoxFolderClicked((BoxFolder) item);
         }
     }
 
@@ -350,7 +340,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
             FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
 
             // All fragments will always navigate into folders
-            BoxSearchFragment searchFragment = new BoxSearchFragment.Builder(mSession, text, mCurrentBoxFolder).build();
+            BoxSearchFragment searchFragment = new BoxSearchFragment.Builder(mSession, text, getCurrentFolder()).build();
             trans.replace(R.id.box_browsesdk_fragment_container, searchFragment)
                     .addToBackStack(BoxBrowseFragment.TAG)
                     .commit();
