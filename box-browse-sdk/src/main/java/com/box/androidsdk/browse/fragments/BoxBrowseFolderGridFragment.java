@@ -16,6 +16,7 @@ import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.adapters.BoxItemAdapter;
 import com.box.androidsdk.browse.adapters.BoxMediaItemAdapter;
 import com.box.androidsdk.browse.filters.BoxItemFilter;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.browse.service.BoxResponseIntent;
 import com.box.androidsdk.browse.uidata.ThumbnailManager;
 import com.box.androidsdk.content.models.BoxFolder;
@@ -215,7 +216,7 @@ public class BoxBrowseFolderGridFragment extends BoxBrowseFragment {
          */
         public Builder(String folderId, String userId) {
             mArgs.putString(ARG_ID, folderId);
-            mArgs.putString(ARG_USER_ID, userId);
+            mArgs.putSerializable(ARG_SESSION, new BoxSessionDto(userId, null));
             setBoxItemFilter(new MediaItemFilter());
         }
 
@@ -228,7 +229,7 @@ public class BoxBrowseFolderGridFragment extends BoxBrowseFragment {
         public Builder(BoxFolder folder, BoxSession session) {
             mArgs.putString(ARG_ID, folder.getId());
             mArgs.putString(ARG_NAME, folder.getName());
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
             setBoxItemFilter(new MediaItemFilter());
         }
 

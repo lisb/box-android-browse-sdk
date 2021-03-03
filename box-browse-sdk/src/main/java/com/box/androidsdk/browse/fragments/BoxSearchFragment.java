@@ -18,6 +18,7 @@ import com.box.androidsdk.browse.adapters.BoxItemAdapter;
 import com.box.androidsdk.browse.adapters.BoxSearchAdapter;
 import com.box.androidsdk.browse.adapters.ResultsHeader;
 import com.box.androidsdk.browse.models.BoxSearchFilters;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.browse.service.BoxResponseIntent;
 import com.box.androidsdk.browse.uidata.ThumbnailManager;
 import com.box.androidsdk.content.models.BoxFile;
@@ -501,7 +502,7 @@ public class BoxSearchFragment extends BoxBrowseFragment {
          * @param parentFolder the parent folder in which the search should be performed
          */
         public Builder(BoxSession session, String searchQuery, BoxFolder parentFolder) {
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
             mArgs.putInt(ARG_LIMIT, DEFAULT_LIMIT);
             mArgs.putString(OUT_QUERY, searchQuery);
             mArgs.putSerializable(EXTRA_PARENT_FOLDER, BoxFolder.createFromIdAndName(parentFolder.getId(), parentFolder.getName()));
@@ -516,7 +517,7 @@ public class BoxSearchFragment extends BoxBrowseFragment {
          * @param boxSearchFilters Filters to fine tune the search results based on file types, modification times etc.
          */
         public Builder(BoxSession session, String searchQuery, BoxFolder parentFolder, BoxSearchFilters boxSearchFilters) {
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
             mArgs.putInt(ARG_LIMIT, DEFAULT_LIMIT);
             mArgs.putString(OUT_QUERY, searchQuery);
             mArgs.putSerializable(EXTRA_PARENT_FOLDER, BoxFolder.createFromIdAndName(parentFolder.getId(), parentFolder.getName()));
@@ -530,7 +531,7 @@ public class BoxSearchFragment extends BoxBrowseFragment {
          * @param parentFolder the parent folder
          */
         public Builder(BoxSession session, BoxFolder parentFolder) {
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
             mArgs.putInt(ARG_LIMIT, DEFAULT_LIMIT);
             mArgs.putSerializable(EXTRA_PARENT_FOLDER, BoxFolder.createFromIdAndName(parentFolder.getId(), parentFolder.getName()));
         }
