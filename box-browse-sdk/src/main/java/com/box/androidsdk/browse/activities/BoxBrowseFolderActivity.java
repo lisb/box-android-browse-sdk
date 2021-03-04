@@ -203,7 +203,7 @@ public class BoxBrowseFolderActivity extends BoxBrowseActivity implements View.O
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.box_browsesdk_action_create_folder) {
-            BoxCreateFolderFragment.newInstance(getCurrentFolder(), mSession)
+            BoxCreateFolderFragment.newInstance(getCurrentFolder())
                     .show(getFragmentManager(), TAG);
             return true;
         } else {
