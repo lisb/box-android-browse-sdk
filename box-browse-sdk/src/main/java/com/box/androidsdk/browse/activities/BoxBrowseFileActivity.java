@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.widget.Toast;
 
 import com.box.androidsdk.browse.R;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.content.BoxException;
 import com.box.androidsdk.content.models.BoxBookmark;
 import com.box.androidsdk.content.models.BoxFile;
@@ -115,7 +116,7 @@ public class BoxBrowseFileActivity extends BoxBrowseActivity {
 
         Intent intent = new Intent(context, BoxBrowseFileActivity.class);
         intent.putExtra(EXTRA_ITEM, folder);
-        intent.putExtra(EXTRA_USER_ID, session.getUser().getId());
+        intent.putExtra(EXTRA_SESSION, BoxSessionDto.marshal(session));
         return intent;
     }
 

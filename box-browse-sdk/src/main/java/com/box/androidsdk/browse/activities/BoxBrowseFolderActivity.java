@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.fragments.BoxBrowseFragment;
 import com.box.androidsdk.browse.fragments.BoxCreateFolderFragment;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.content.BoxApiFolder;
 import com.box.androidsdk.content.BoxException;
 import com.box.androidsdk.content.models.BoxFolder;
@@ -59,7 +60,7 @@ public class BoxBrowseFolderActivity extends BoxBrowseActivity implements View.O
 
         Intent intent = new Intent(context, BoxBrowseFolderActivity.class);
         intent.putExtra(EXTRA_ITEM, folder);
-        intent.putExtra(EXTRA_USER_ID, session.getUser().getId());
+        intent.putExtra(EXTRA_SESSION, BoxSessionDto.marshal(session));
         return intent;
     }
 
@@ -203,7 +204,7 @@ public class BoxBrowseFolderActivity extends BoxBrowseActivity implements View.O
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.box_browsesdk_action_create_folder) {
-            BoxCreateFolderFragment.newInstance(getCurrentFolder(), mSession)
+            BoxCreateFolderFragment.newInstance(getCurrentFolder())
                     .show(getFragmentManager(), TAG);
             return true;
         } else {

@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.box.androidsdk.browse.R;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.content.BoxConfig;
 import com.box.androidsdk.content.BoxFutureTask;
 import com.box.androidsdk.content.auth.BoxAuthentication;
@@ -31,8 +32,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 /**
@@ -42,7 +41,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
  */
 public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
     public static final String EXTRA_ITEM = "extraItem";
-    public static final String EXTRA_USER_ID = "extraUserId";
+    public static final String EXTRA_SESSION = "extraSession";
 
     protected BoxSession mSession;
     protected BoxItem mItem;
@@ -78,17 +77,16 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
         mDialogHandler = new LastRunnableHandler();
-        String userId = null;
         if (savedInstanceState != null && savedInstanceState.getSerializable(EXTRA_ITEM) != null){
-            userId = savedInstanceState.getString(EXTRA_USER_ID);
+            mSession = BoxSessionDto.unmarshal(this, (BoxSessionDto) savedInstanceState.getSerializable(EXTRA_SESSION));
             mItem = (BoxItem)savedInstanceState.getSerializable(EXTRA_ITEM);
 
         } else if (getIntent() != null) {
-            userId = getIntent().getStringExtra(EXTRA_USER_ID);
+            mSession = BoxSessionDto.unmarshal(this, (BoxSessionDto) getIntent().getSerializableExtra(EXTRA_SESSION));
             mItem = (BoxItem)getIntent().getSerializableExtra(EXTRA_ITEM);
         }
 
-        if (SdkUtils.isBlank(userId)) {
+        if (mSession == null || mSession.getUser() == null || SdkUtils.isBlank(mSession.getUser().getId())) {
             Toast.makeText(this, R.string.box_browsesdk_session_is_not_authenticated, Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -98,7 +96,6 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
             finish();
             return;
         }
-        mSession = new BoxSession(this, userId);
         mSession.setSessionAuthListener(new BoxAuthentication.AuthListener() {
             @Override
             public void onRefreshed(BoxAuthentication.BoxAuthenticationInfo info) {
@@ -225,9 +222,7 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
        outState.putSerializable(EXTRA_ITEM, mItem);
-        if (mSession != null && mSession.getUser() != null) {
-            outState.putString(EXTRA_USER_ID, mSession.getUser().getId());
-        }
+       outState.putSerializable(EXTRA_SESSION, BoxSessionDto.marshal(mSession));
         super.onSaveInstanceState(outState);
     }
 

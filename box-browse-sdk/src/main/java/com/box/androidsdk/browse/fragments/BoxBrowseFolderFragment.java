@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.box.androidsdk.browse.R;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.browse.service.BoxResponseIntent;
 import com.box.androidsdk.content.models.BoxFolder;
 import com.box.androidsdk.content.models.BoxIterator;
@@ -156,8 +157,7 @@ public class BoxBrowseFolderFragment extends BoxBrowseFragment {
          */
         public Builder(String folderId, String userId) {
             mArgs.putString(ARG_ID, folderId);
-            mArgs.putString(ARG_USER_ID, userId);
-
+            mArgs.putSerializable(ARG_SESSION, new BoxSessionDto(userId, null));
         }
 
         /**
@@ -169,7 +169,7 @@ public class BoxBrowseFolderFragment extends BoxBrowseFragment {
         public Builder(BoxFolder folder, BoxSession session) {
             mArgs.putString(ARG_ID, folder.getId());
             mArgs.putString(ARG_NAME, folder.getName());
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
         }
 
         /**

@@ -30,6 +30,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.adapters.BoxItemAdapter;
 import com.box.androidsdk.browse.filters.BoxItemFilter;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.browse.service.BoxBrowseController;
 import com.box.androidsdk.browse.service.BoxResponseIntent;
 import com.box.androidsdk.browse.service.BrowseController;
@@ -54,7 +55,7 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
     public static final String TAG = BoxBrowseFragment.class.getName();
 
     protected static final String ARG_ID = "argId";
-    protected static final String ARG_USER_ID = "argUserId";
+    protected static final String ARG_SESSION = "argSession";
     protected static final String ARG_NAME = "argName";
     protected static final String ARG_LIMIT = "argLimit";
     protected static final String ARG_BOX_ITEM_FILTER = "argBoxBrowseFilter";
@@ -115,8 +116,8 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            String userId = getArguments().getString(ARG_USER_ID);
-            if (SdkUtils.isBlank(userId)) {
+            final BoxSessionDto sessionDto = (BoxSessionDto) getArguments().getSerializable(ARG_SESSION);
+            if (sessionDto == null || SdkUtils.isBlank(sessionDto.userId)) {
                 throw new IllegalArgumentException("A valid session or user id must be provided");
             }
             mBoxItemFilter = (BoxItemFilter) getArguments().getSerializable(ARG_BOX_ITEM_FILTER);
@@ -318,9 +319,10 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
      */
     public BrowseController getController() {
         if (mController == null) {
-            String userId = getArguments().getString(ARG_USER_ID);
-            final LocalBroadcastManager bm = LocalBroadcastManager.getInstance(getActivity());
-            mController = new BoxBrowseController(new BoxSession(getActivity(), userId))
+            final BoxSession session = BoxSessionDto.unmarshal(requireContext(),
+                    (BoxSessionDto) getArguments().getSerializable(ARG_SESSION));
+            final LocalBroadcastManager bm = LocalBroadcastManager.getInstance(requireContext());
+            mController = new BoxBrowseController(session)
                     .setCompletedListener(new CompletionListener(bm, false))
                     .setCacheCompletedListener(new CompletionListener(bm, true));
         }
@@ -754,7 +756,7 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
          * @param userId the user id
          */
         protected void setUserId(String userId) {
-            mArgs.putString(ARG_USER_ID, userId);
+            mArgs.putSerializable(ARG_SESSION, new BoxSessionDto(userId, null));
         }
 
         /**
