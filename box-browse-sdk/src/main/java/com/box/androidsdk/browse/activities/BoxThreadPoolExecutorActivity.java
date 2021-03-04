@@ -142,6 +142,7 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mBroadcastReceiver);
+        mSession.setSessionAuthListener(null);
         super.onDestroy();
     }
 
