@@ -222,7 +222,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
     protected void setTitle(final BoxFolder folder) {
         ActionBar actionbar = getSupportActionBar();
         if (actionbar != null && folder != null) {
-            actionbar.setTitle(folder.getId() == BoxConstants.ROOT_FOLDER_ID
+            actionbar.setTitle(BoxConstants.ROOT_FOLDER_ID.equals(folder.getId())
                     ? getString(R.string.box_browsesdk_all_files) : folder.getName());
         }
     }
