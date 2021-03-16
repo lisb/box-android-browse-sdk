@@ -46,8 +46,14 @@ public class BoxBrowseFileActivity extends BoxBrowseActivity {
         initToolbar();
         initRecentSearches();
         if (getSupportFragmentManager().getBackStackEntryCount() < 1){
-            onItemClick(mItem);
-            getSupportActionBar().setTitle(mItem.getName());
+            final BoxFolder item = (BoxFolder) getIntent().getSerializableExtra(EXTRA_FOLDER);
+            onItemClick(item);
+            setTitle(item);
+        } else {
+            final BoxFolder currentFolder = getCurrentFolder();
+            if (currentFolder != null) {
+                setTitle(currentFolder);
+            }
         }
 
     }
@@ -115,7 +121,7 @@ public class BoxBrowseFileActivity extends BoxBrowseActivity {
             throw new IllegalArgumentException("A valid user must be provided to browse");
 
         Intent intent = new Intent(context, BoxBrowseFileActivity.class);
-        intent.putExtra(EXTRA_ITEM, folder);
+        intent.putExtra(EXTRA_FOLDER, folder);
         intent.putExtra(EXTRA_SESSION, BoxSessionDto.marshal(session));
         return intent;
     }
