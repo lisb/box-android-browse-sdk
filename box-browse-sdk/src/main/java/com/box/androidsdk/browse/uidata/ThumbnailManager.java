@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.os.Handler;
 import android.os.Looper;
+
+import androidx.annotation.UiThread;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.ViewParent;
 import android.widget.ImageView;
@@ -497,6 +499,7 @@ public class ThumbnailManager implements LoaderDrawable.ImageReadyListener{
      * @param bitmap    the bitmap
      * @param imageView the image view
      */
+    @UiThread
     public void loadThumbnail(final Bitmap bitmap, final ImageView imageView){
         ViewParent parent = imageView.getParent();
         boolean isScrolling = false;
