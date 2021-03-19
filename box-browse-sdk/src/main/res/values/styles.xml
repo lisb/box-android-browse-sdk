@@ -3,7 +3,7 @@
         <item name="colorPrimary">@color/box_browsesdk_primary</item>
         <item name="colorPrimaryDark">@color/box_browsesdk_primary_dark</item>
         <item name="colorAccent">@color/box_browsesdk_accent</item>
-        <item name="searchViewStyle">@style/BoxBrowse_SearchView</item>
+        <item name="searchViewStyle">@style/Widget.AppCompat.SearchView.ActionBar</item>
     </style>
 
     <style name="BoxDialogTitle" parent="@style/TextAppearance.AppCompat.Title">
@@ -72,12 +72,6 @@
         <item name="android:minHeight">40dp</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:background">@drawable/button_settings_states2</item>
-    </style>
-
-    <style name="BoxBrowse_SearchView" parent="Widget.AppCompat.Light.SearchView">
-        <item name="actionModeBackground">@android:color/white</item>
-        <item name="closeIcon">@drawable/ic_searchclear</item>
-        <item name="queryHint">@string/default_search_hint</item>
     </style>
 
 </resources>
