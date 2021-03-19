@@ -383,8 +383,12 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
             hideKeyboard();
         } else if (newBackStackEntryCount < backStackEntryCount) {
             // backed
-            mSearchView.onActionViewCollapsed();
+
+            // Set null to OnQueryTextListener because expandActionView clear queries.
+            mSearchView.setOnQueryTextListener(null);
+            mSearchViewMenuItem.expandActionView();
             mSearchView.setQuery(((BoxSearchFragment)f).getSearchQuery(), false);
+            mSearchView.setOnQueryTextListener(this);
         }
         backStackEntryCount = newBackStackEntryCount;
     }
