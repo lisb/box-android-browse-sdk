@@ -238,6 +238,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
     public boolean onCreateOptionsMenu(Menu menu) {
         mSearchViewMenuItem = menu.findItem(R.id.box_browsesdk_action_search);
         mSearchView = (SearchView) mSearchViewMenuItem.getActionView();
+        mSearchView.setMaxWidth(Integer.MAX_VALUE);
 
         final Fragment f = getSupportFragmentManager()
                 .findFragmentById(R.id.box_browsesdk_fragment_container);
