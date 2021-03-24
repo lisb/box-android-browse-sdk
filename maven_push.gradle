@@ -39,7 +39,7 @@ afterEvaluate {
                 artifact tasks.androidJavadocsJar
                 groupId = "com.lisb.android.box"
                 artifactId = POM_ARTIFACT_ID
-                version = "3.0.3-SNAPSHOT"
+                version = "3.0.3"
 
                 pom {
                     name = POM_NAME
