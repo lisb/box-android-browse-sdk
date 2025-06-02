@@ -5,16 +5,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.widget.Toast;
 
 import com.box.androidsdk.browse.R;
+import com.box.androidsdk.browse.models.BoxSessionDto;
+import com.box.androidsdk.content.BoxException;
 import com.box.androidsdk.content.models.BoxBookmark;
 import com.box.androidsdk.content.models.BoxFile;
 import com.box.androidsdk.content.models.BoxFolder;
 import com.box.androidsdk.content.models.BoxItem;
 import com.box.androidsdk.content.models.BoxSession;
+import com.box.androidsdk.content.requests.BoxRequestUpdateSharedItem;
+import com.box.androidsdk.content.requests.BoxResponse;
 import com.box.androidsdk.content.utils.SdkUtils;
 import com.eclipsesource.json.JsonObject;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
 /**
@@ -40,8 +46,14 @@ public class BoxBrowseFileActivity extends BoxBrowseActivity {
         initToolbar();
         initRecentSearches();
         if (getSupportFragmentManager().getBackStackEntryCount() < 1){
-            onItemClick(mItem);
-            getSupportActionBar().setTitle(mItem.getName());
+            final BoxFolder item = (BoxFolder) getIntent().getSerializableExtra(EXTRA_FOLDER);
+            onItemClick(item);
+            setTitle(item);
+        } else {
+            final BoxFolder currentFolder = getCurrentFolder();
+            if (currentFolder != null) {
+                setTitle(currentFolder);
+            }
         }
 
     }
@@ -50,13 +62,42 @@ public class BoxBrowseFileActivity extends BoxBrowseActivity {
     public void onItemClick(BoxItem item) {
         super.onItemClick(item);
         if (item instanceof BoxFile || item instanceof BoxBookmark) {
-            Intent intent = new Intent();
-            intent.putExtra(EXTRA_BOX_FILE, item);
-            setResult(Activity.RESULT_OK, intent);
-            finish();
+            if (item.getSharedLink() != null && item.getSharedLink().getURL() != null) {
+                finishWithResult(item);
+            } else {
+                getApiExecutor(getApplication()).execute(mController.getCreatedSharedLinkRequest(item).toTask());
+            }
         }
     }
 
+    private void finishWithResult(BoxItem item) {
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_BOX_FILE, item);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
+    }
+
+    @Override
+    protected void handleBoxResponse(BoxResponse response) {
+        if (response.getRequest() instanceof BoxRequestUpdateSharedItem) {
+            if (response.isSuccess()) {
+                finishWithResult((BoxItem) response.getResult());
+            } else {
+                if (response.getException() instanceof BoxException) {
+                    int responseCode = ((BoxException) response.getException()).getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                        return;
+                    }
+
+                    if (responseCode == HttpURLConnection.HTTP_FORBIDDEN) {
+                        Toast.makeText(this, R.string.box_sharesdk_insufficient_permissions, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
+                Toast.makeText(this, R.string.box_sharesdk_unable_to_modify_toast, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -80,8 +121,8 @@ public class BoxBrowseFileActivity extends BoxBrowseActivity {
             throw new IllegalArgumentException("A valid user must be provided to browse");
 
         Intent intent = new Intent(context, BoxBrowseFileActivity.class);
-        intent.putExtra(EXTRA_ITEM, folder);
-        intent.putExtra(EXTRA_USER_ID, session.getUser().getId());
+        intent.putExtra(EXTRA_FOLDER, folder);
+        intent.putExtra(EXTRA_SESSION, BoxSessionDto.marshal(session));
         return intent;
     }
 

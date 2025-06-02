@@ -11,14 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,9 +18,19 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.adapters.BoxItemAdapter;
 import com.box.androidsdk.browse.filters.BoxItemFilter;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.browse.service.BoxBrowseController;
 import com.box.androidsdk.browse.service.BoxResponseIntent;
 import com.box.androidsdk.browse.service.BrowseController;
@@ -53,7 +55,7 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
     public static final String TAG = BoxBrowseFragment.class.getName();
 
     protected static final String ARG_ID = "argId";
-    protected static final String ARG_USER_ID = "argUserId";
+    protected static final String ARG_SESSION = "argSession";
     protected static final String ARG_NAME = "argName";
     protected static final String ARG_LIMIT = "argLimit";
     protected static final String ARG_BOX_ITEM_FILTER = "argBoxBrowseFilter";
@@ -114,8 +116,8 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            String userId = getArguments().getString(ARG_USER_ID);
-            if (SdkUtils.isBlank(userId)) {
+            final BoxSessionDto sessionDto = (BoxSessionDto) getArguments().getSerializable(ARG_SESSION);
+            if (sessionDto == null || SdkUtils.isBlank(sessionDto.userId)) {
                 throw new IllegalArgumentException("A valid session or user id must be provided");
             }
             mBoxItemFilter = (BoxItemFilter) getArguments().getSerializable(ARG_BOX_ITEM_FILTER);
@@ -155,7 +157,6 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
         getActivity().registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         getLocalBroadcastManager().registerReceiver(mBroadcastReceiver, getIntentFilter());
         if (mItems == null) {
-            mProgress.setVisibility(View.VISIBLE);
             loadItems();
         } else {
             // this call must be made after registering the receiver in order to handle very fast responses.
@@ -188,9 +189,6 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
      * @param intent the intent
      */
     protected void handleResponse(BoxResponseIntent intent) {
-        if (!intent.isSuccess()) {
-            mController.onError(getActivity(), intent.getResponse());
-        }
         if (intent.getAction().equals(BoxRequestsFile.DownloadThumbnail.class.getName())) {
             onDownloadedThumbnail(intent);
         }
@@ -263,10 +261,10 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
     private void updateUI() {
         if (mItems == null) {
             // UI should not be updated before the first load
-            return;
+            setEmptyState(false);
+        } else {
+            setEmptyState(mAdapter.getItemCount() == 0);
         }
-
-        setEmptyState(mAdapter.getItemCount() == 0);
 
     }
 
@@ -301,7 +299,9 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
 
     @Override
     public void onRefresh() {
-        mSwipeRefresh.setRefreshing(true);
+        if (mSwipeRefresh != null) {
+            mSwipeRefresh.setRefreshing(true);
+        }
         loadItems();
     }
 
@@ -319,8 +319,12 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
      */
     public BrowseController getController() {
         if (mController == null) {
-            String userId = getArguments().getString(ARG_USER_ID);
-            mController = new BoxBrowseController(new BoxSession(getActivity(), userId)).setCompletedListener(new CompletionListener(LocalBroadcastManager.getInstance(getActivity())));
+            final BoxSession session = BoxSessionDto.unmarshal(requireContext(),
+                    (BoxSessionDto) getArguments().getSerializable(ARG_SESSION));
+            final LocalBroadcastManager bm = LocalBroadcastManager.getInstance(requireContext());
+            mController = new BoxBrowseController(session)
+                    .setCompletedListener(new CompletionListener(bm, false))
+                    .setCacheCompletedListener(new CompletionListener(bm, true));
         }
 
         return mController;
@@ -413,14 +417,6 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
         FragmentActivity activity = getActivity();
         if (activity == null) {
             return;
-        }
-
-        if (mProgress != null) {
-            mProgress.setVisibility(View.GONE);
-        }
-
-        if (mSwipeRefresh != null) {
-            mSwipeRefresh.setRefreshing(false);
         }
 
         ArrayList<BoxItem> filteredItems = new ArrayList<BoxItem>();
@@ -760,7 +756,7 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
          * @param userId the user id
          */
         protected void setUserId(String userId) {
-            mArgs.putString(ARG_USER_ID, userId);
+            mArgs.putSerializable(ARG_SESSION, new BoxSessionDto(userId, null));
         }
 
         /**

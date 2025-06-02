@@ -16,11 +16,14 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.box.androidsdk.browse.R;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.content.BoxConfig;
 import com.box.androidsdk.content.BoxFutureTask;
 import com.box.androidsdk.content.auth.BoxAuthentication;
-import com.box.androidsdk.content.models.BoxItem;
 import com.box.androidsdk.content.models.BoxSession;
 import com.box.androidsdk.content.requests.BoxResponse;
 import com.box.androidsdk.content.utils.SdkUtils;
@@ -30,22 +33,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentManager;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 /**
  * Base class for all activities that make API requests through the Box Content SDK. This class is responsible for
  * showing a loading spinner while a request is executing and then hiding it when the request is complete.
  * All BoxRequest tasks should be submitted to getApiExecutor and then handled by overriding handleBoxResponse
  */
 public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
-    public static final String EXTRA_ITEM = "extraItem";
-    public static final String EXTRA_USER_ID = "extraUserId";
+    public static final String EXTRA_FOLDER = "extraFolder";
+    public static final String EXTRA_SESSION = "extraSession";
 
     protected BoxSession mSession;
-    protected BoxItem mItem;
 
     protected static final int DEFAULT_TIMEOUT = 30 * 1000;
     private static final int  DEFAULT_SPINNER_DELAY = 500;
@@ -78,27 +75,18 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
         mDialogHandler = new LastRunnableHandler();
-        String userId = null;
-        if (savedInstanceState != null && savedInstanceState.getSerializable(EXTRA_ITEM) != null){
-            userId = savedInstanceState.getString(EXTRA_USER_ID);
-            mItem = (BoxItem)savedInstanceState.getSerializable(EXTRA_ITEM);
+        if (savedInstanceState != null && savedInstanceState.getSerializable(EXTRA_SESSION) != null){
+            mSession = BoxSessionDto.unmarshal(this, (BoxSessionDto) savedInstanceState.getSerializable(EXTRA_SESSION));
 
         } else if (getIntent() != null) {
-            userId = getIntent().getStringExtra(EXTRA_USER_ID);
-            mItem = (BoxItem)getIntent().getSerializableExtra(EXTRA_ITEM);
+            mSession = BoxSessionDto.unmarshal(this, (BoxSessionDto) getIntent().getSerializableExtra(EXTRA_SESSION));
         }
 
-        if (SdkUtils.isBlank(userId)) {
+        if (mSession == null || mSession.getUser() == null || SdkUtils.isBlank(mSession.getUser().getId())) {
             Toast.makeText(this, R.string.box_browsesdk_session_is_not_authenticated, Toast.LENGTH_LONG).show();
             finish();
             return;
         }
-        if (mItem == null){
-            Toast.makeText(this, R.string.box_browsesdk_no_item_selected, Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-        mSession = new BoxSession(this, userId);
         mSession.setSessionAuthListener(new BoxAuthentication.AuthListener() {
             @Override
             public void onRefreshed(BoxAuthentication.BoxAuthenticationInfo info) {
@@ -145,6 +133,7 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mBroadcastReceiver);
+        mSession.setSessionAuthListener(null);
         super.onDestroy();
     }
 
@@ -204,30 +193,9 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Convenient accessor for the BoxItem that will be interacted with
-     *
-     * @return the target box item the user is performing actions on.
-     */
-    protected BoxItem getMainItem(){
-        return mItem;
-    }
-
-    /**
-     * Sets the main BoxItem that will be interacted with
-     *
-     * @param boxItem the box item
-     */
-    protected void setMainItem(final BoxItem boxItem){
-        mItem = boxItem;
-    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-       outState.putSerializable(EXTRA_ITEM, mItem);
-        if (mSession != null && mSession.getUser() != null) {
-            outState.putString(EXTRA_USER_ID, mSession.getUser().getId());
-        }
+       outState.putSerializable(EXTRA_SESSION, BoxSessionDto.marshal(mSession));
         super.onSaveInstanceState(outState);
     }
 

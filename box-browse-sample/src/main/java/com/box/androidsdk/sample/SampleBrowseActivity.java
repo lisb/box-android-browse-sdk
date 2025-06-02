@@ -11,11 +11,13 @@ import com.box.androidsdk.browse.activities.BoxBrowseFileActivity;
 import com.box.androidsdk.browse.activities.BoxBrowseFolderActivity;
 import com.box.androidsdk.browse.service.BoxSimpleLocalCache;
 import com.box.androidsdk.content.BoxConfig;
-import com.box.androidsdk.content.models.BoxFile;
 import com.box.androidsdk.content.models.BoxFolder;
+import com.box.androidsdk.content.models.BoxItem;
 import com.box.androidsdk.content.models.BoxSession;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.Serializable;
 
 
 public class SampleBrowseActivity extends AppCompatActivity {
@@ -24,7 +26,6 @@ public class SampleBrowseActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_FOLDER_PICKER = 2;
 
     public static final String ROOT_FOLDER_ID = "0";
-    public static final String ROOT_FOLDER_NAME = "All Files";
 
     private Button btnFilePicker;
     private Button btnFolderPicker;
@@ -49,11 +50,17 @@ public class SampleBrowseActivity extends AppCompatActivity {
     }
 
     private void launchFilePicker() {
-        startActivityForResult(BoxBrowseFileActivity.getLaunchIntent(this, BoxFolder.createFromIdAndName(ROOT_FOLDER_ID, ROOT_FOLDER_NAME), session), REQUEST_CODE_FILE_PICKER);
+        startActivityForResult(BoxBrowseFileActivity.getLaunchIntent(this,
+                BoxFolder.createFromIdAndName(ROOT_FOLDER_ID, getString(R.string.box_browsesdk_all_files)),
+                session),
+                REQUEST_CODE_FILE_PICKER);
     }
 
     private void launchFolderPicker() {
-        startActivityForResult(BoxBrowseFolderActivity.getLaunchIntent(this, BoxFolder.createFromIdAndName(ROOT_FOLDER_ID, ROOT_FOLDER_NAME), session), REQUEST_CODE_FOLDER_PICKER);
+        startActivityForResult(BoxBrowseFolderActivity.getLaunchIntent(this,
+                BoxFolder.createFromIdAndName(ROOT_FOLDER_ID, getString(R.string.box_browsesdk_all_files)),
+                session),
+                REQUEST_CODE_FOLDER_PICKER);
     }
 
     @Override
@@ -61,8 +68,14 @@ public class SampleBrowseActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_CODE_FILE_PICKER:
                 if (resultCode == Activity.RESULT_OK) {
-                    BoxFile boxFile = (BoxFile) data.getSerializableExtra(BoxBrowseFileActivity.EXTRA_BOX_FILE);
-                    Toast.makeText(this, String.format("File picked, id: %s; name: %s", boxFile.getId(), boxFile.getName()), Toast.LENGTH_LONG).show();
+                    final Serializable item = data.getSerializableExtra(BoxBrowseFileActivity.EXTRA_BOX_FILE);
+                    if (item instanceof BoxItem) {
+                        final BoxItem boxItem = (BoxItem) item;
+                        Toast.makeText(this,
+                                String.format("File picked, id: %s; name: %s; shared link: %s",
+                                        boxItem.getId(), boxItem.getName(), boxItem.getSharedLink().getURL()),
+                                Toast.LENGTH_LONG).show();
+                    }
                 } else {
                     // No file selected
                 }

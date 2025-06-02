@@ -14,7 +14,6 @@ import android.widget.EditText;
 
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.content.models.BoxFolder;
-import com.box.androidsdk.content.models.BoxSession;
 import com.box.androidsdk.content.utils.SdkUtils;
 
 /**
@@ -22,11 +21,9 @@ import com.box.androidsdk.content.utils.SdkUtils;
  */
 public class BoxCreateFolderFragment extends DialogFragment implements DialogInterface.OnClickListener {
 
-    public static final String ARGS_USER_ID = "argsUserId";
     public static String ARGS_PARENT_FOLDER_ID = "argsParentFolderId";
 
     protected String mFolderId;
-    protected BoxSession mSession;
 
     protected EditText mNameText;
 
@@ -65,13 +62,7 @@ public class BoxCreateFolderFragment extends DialogFragment implements DialogInt
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Activity activity = getActivity();
         Bundle b = getArguments();
-        String userId = b.getString(ARGS_USER_ID, null);
         mFolderId = b.getString(ARGS_PARENT_FOLDER_ID, null);
-        if (activity == null || SdkUtils.isBlank(userId) || SdkUtils.isBlank((mFolderId))) {
-            return null;
-        }
-
-        mSession = new BoxSession(activity, userId);
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         View view = getActivity().getLayoutInflater().inflate(R.layout.box_browsesdk_fragment_create_folder, null);
         dialogBuilder.setView(view)
@@ -95,19 +86,14 @@ public class BoxCreateFolderFragment extends DialogFragment implements DialogInt
      * New instance box create folder fragment.
      *
      * @param folder  the folder
-     * @param session an authenticated session
      * @return the box create folder fragment
      */
-    public static BoxCreateFolderFragment newInstance(BoxFolder folder, BoxSession session) {
+    public static BoxCreateFolderFragment newInstance(BoxFolder folder) {
         if (folder == null || SdkUtils.isBlank(folder.getId()))
             throw new IllegalArgumentException("A valid folder must be provided to browse");
-        if (session == null || session.getUser() == null || SdkUtils.isBlank(session.getUser().getId()))
-            throw new IllegalArgumentException("A valid user must be provided to browse");
-
         BoxCreateFolderFragment createFolderDialog = new BoxCreateFolderFragment();
         Bundle b = new Bundle();
         b.putString(ARGS_PARENT_FOLDER_ID, folder.getId());
-        b.putString(ARGS_USER_ID, session.getUserId());
         createFolderDialog.setArguments(b);
         return createFolderDialog;
     }

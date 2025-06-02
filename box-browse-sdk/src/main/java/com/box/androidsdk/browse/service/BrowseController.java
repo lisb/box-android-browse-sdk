@@ -2,17 +2,19 @@ package com.box.androidsdk.browse.service;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+
 import androidx.collection.LruCache;
 
 import com.box.androidsdk.browse.uidata.ThumbnailManager;
 import com.box.androidsdk.content.BoxFutureTask;
+import com.box.androidsdk.content.models.BoxItem;
 import com.box.androidsdk.content.models.BoxRepresentation;
 import com.box.androidsdk.content.models.BoxUser;
 import com.box.androidsdk.content.requests.BoxRequest;
+import com.box.androidsdk.content.requests.BoxRequestUpdateSharedItem;
 import com.box.androidsdk.content.requests.BoxRequestsFile;
 import com.box.androidsdk.content.requests.BoxRequestsFolder;
 import com.box.androidsdk.content.requests.BoxRequestsSearch;
-import com.box.androidsdk.content.requests.BoxResponse;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -59,6 +61,8 @@ public interface BrowseController {
                                                                              BoxRepresentation representation,
                                                                              File downloadFile);
 
+    BoxRequestUpdateSharedItem getCreatedSharedLinkRequest(BoxItem boxItem);
+
     /***
      * Executes the request using the appropriate executor
      *
@@ -67,20 +71,18 @@ public interface BrowseController {
     void execute(BoxRequest request);
 
     /***
-     * Sets the default compeltion listener that will be used after the completion of a BoxRequest
+     * Sets the default completed listener that will be used after the completion of a BoxRequest
      *
      * @param listener the listener
      * @return this
      */
     BrowseController setCompletedListener(BoxFutureTask.OnCompletedListener listener);
 
-    /**
-     * Error handler for whenever an error occurs from a request
-     *
-     * @param context  the context
-     * @param response response returned from the server that contains the request, result, and exception
+    /***
+     * Sets the completed listener for cache that will be used after received the cached result of a BoxRequest
+     * @return this
      */
-    void onError(Context context, BoxResponse response);
+    BrowseController setCacheCompletedListener(BoxFutureTask.OnCompletedListener listener);
 
     /**
      * Gets recent searches.

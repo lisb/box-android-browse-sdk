@@ -4,16 +4,19 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
-import android.view.View;
 
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.adapters.BoxItemAdapter;
 import com.box.androidsdk.browse.adapters.BoxMediaItemAdapter;
 import com.box.androidsdk.browse.filters.BoxItemFilter;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.browse.service.BoxResponseIntent;
 import com.box.androidsdk.browse.uidata.ThumbnailManager;
 import com.box.androidsdk.content.models.BoxFolder;
@@ -106,21 +109,35 @@ public class BoxBrowseFolderGridFragment extends BoxBrowseFragment {
     @Override
     protected void handleResponse(BoxResponseIntent intent) {
         super.handleResponse(intent);
-        if (!intent.isSuccess()) {
-            checkConnectivity();
-            return;
-        }
         if (intent.getAction().equals(BoxRequestsFolder.GetFolderWithAllItems.class.getName())) {
-            onFolderFetched((BoxFolder) intent.getResult());
-            if (mSwipeRefresh != null) {
-                mSwipeRefresh.setRefreshing(false);
+            final BoxRequestsFolder.GetFolderWithAllItems request =
+                    (BoxRequestsFolder.GetFolderWithAllItems) intent.getRequest();
+            if (mFolder != null && mFolder.getId().equals(request.getId())) {
+                if (mSwipeRefresh != null && !intent.isFromCache()) {
+                    mSwipeRefresh.setRefreshing(false);
+                }
+                if (intent.isSuccess()) {
+                    final BoxFolder holder = (BoxFolder) intent.getResult();
+                    if (holder != null) {
+                        mProgress.setVisibility(View.GONE);
+                        onFolderFetched(holder);
+                    }
+                } else {
+                    mProgress.setVisibility(View.GONE);
+                    checkConnectivity();
+                    Toast.makeText(getContext(),
+                            R.string.box_browsesdk_problem_fetching_folder,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
 
     @Override
     protected void loadItems() {
-        mProgress.setVisibility(View.VISIBLE);
+        if (mItems == null) {
+            mProgress.setVisibility(View.VISIBLE);
+        }
         getController().execute(getController().getFolderWithAllItems(mFolder.getId()));
     }
 
@@ -144,15 +161,13 @@ public class BoxBrowseFolderGridFragment extends BoxBrowseFragment {
      *
      * @param folder that has been fetched
      */
-    protected void onFolderFetched(BoxFolder folder) {
-        if (folder != null && mFolder.getId().equals(folder.getId())) {
-            BoxIteratorItems items = folder.getItemCollection();
-            if (items != null && items.getEntries() != null && items.fullSize() != null && (items.size() > 0 || items.fullSize() == 0)) {
-                updateItems(folder.getItemCollection().getEntries());
-            }
-            mFolder = createFolderWithoutItems(folder);
-            notifyUpdateListeners();
+    protected void onFolderFetched(@NonNull BoxFolder folder) {
+        BoxIteratorItems items = folder.getItemCollection();
+        if (items != null && items.getEntries() != null && items.fullSize() != null && (items.size() > 0 || items.fullSize() == 0)) {
+            updateItems(folder.getItemCollection().getEntries());
         }
+        mFolder = createFolderWithoutItems(folder);
+        notifyUpdateListeners();
     }
 
     @Override
@@ -201,7 +216,7 @@ public class BoxBrowseFolderGridFragment extends BoxBrowseFragment {
          */
         public Builder(String folderId, String userId) {
             mArgs.putString(ARG_ID, folderId);
-            mArgs.putString(ARG_USER_ID, userId);
+            mArgs.putSerializable(ARG_SESSION, new BoxSessionDto(userId, null));
             setBoxItemFilter(new MediaItemFilter());
         }
 
@@ -214,7 +229,7 @@ public class BoxBrowseFolderGridFragment extends BoxBrowseFragment {
         public Builder(BoxFolder folder, BoxSession session) {
             mArgs.putString(ARG_ID, folder.getId());
             mArgs.putString(ARG_NAME, folder.getName());
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
             setBoxItemFilter(new MediaItemFilter());
         }
 

@@ -50,4 +50,6 @@
     <string description="Label for setting to search for files with size in given range" name="item_size_25_to_100">25 à 100 Mo</string>
     <string description="Label for setting to search for files with size in given range" name="item_size_100_to_1000">100 Mo à 1 Go</string>
     <string desctiption="If user has selected some search filters, we show the same as a string. This is the delimiter for the same. For example this may be shown as 'PDF, Image, Audio, Last Week, 1-5 MB'. ', ' is picked from this string as a delimiter" name="search_filter_label_delimiter">,</string>
+    <string name="box_sharesdk_insufficient_permissions">Vous n\'avez pas les autorisations suffisantes pour effectuer cette action.</string>
+    <string name="box_sharesdk_unable_to_modify_toast">Un problème s\'est produit lors de la modification/création de ce lien partagé.</string>
 </resources>

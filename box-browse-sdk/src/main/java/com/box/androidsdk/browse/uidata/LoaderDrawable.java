@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.widget.ImageView;
 
+import androidx.annotation.UiThread;
+
 import com.box.androidsdk.content.BoxFutureTask;
 import com.box.androidsdk.content.models.BoxDownload;
 import com.box.androidsdk.content.models.BoxItem;
@@ -138,36 +140,41 @@ public class LoaderDrawable extends BitmapDrawable {
          */
         public static ThumbnailTask create(final BoxRequestDownload request, final BoxItem boxItem, ImageView targetView, final ImageReadyListener imageReadyListener) {
             final WeakReference<ImageView> targetRef = new WeakReference<ImageView>(targetView);
-            Callable<BoxResponse<BoxDownload>> callable = new Callable<BoxResponse<BoxDownload>>() {
-                @Override
-                public BoxResponse<BoxDownload> call() throws Exception {
-                    BoxDownload ret = null;
-                    Exception ex = null;
-                    try {
-                        File imageFile = request.getTarget();
-                        boolean isCached = imageFile.exists() && imageFile.length() > 0;
-                        if (!isCached) {
-                            // If the image has not been cached we make the remote call
-                            ret = (BoxDownload)request.send();
-                        }
-                        final ImageView target = targetRef.get();
-                        Bitmap bm = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-
-                        // Ensure that the image view has not been recycled before setting the image
-                        final String key = createRequestKey(request);
-                        if (bm != null && target != null && target.getDrawable() instanceof LoaderDrawable &&
-                                ((LoaderDrawable) target.getDrawable()).getTask().getKey().equals(key)){
-                            imageReadyListener.onImageReady(imageFile, request, bm, targetRef.get());
-                        }
-                    } catch (Exception e) {
-                        ex = e;
+            Callable<BoxResponse<BoxDownload>> callable = () -> {
+                BoxDownload ret = null;
+                Exception ex = null;
+                try {
+                    File imageFile = request.getTarget();
+                    boolean isCached = imageFile.exists() && imageFile.length() > 0;
+                    if (!isCached) {
+                        // If the image has not been cached we make the remote call
+                        ret = (BoxDownload)request.send();
                     }
-                    BoxResponse response = new BoxResponse<BoxDownload>(ret, ex, request);
-                    if (ex != null){
-                        imageReadyListener.onImageException(response, targetRef.get());
+                    Bitmap bm = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                    // Ensure that the image view has not been recycled before setting the image
+                    final ImageView target = targetRef.get();
+                    if (bm != null && target != null) {
+                        target.post(() -> {
+                            final String key = createRequestKey(request);
+                            if (target.getDrawable() instanceof LoaderDrawable &&
+                                    ((LoaderDrawable) target.getDrawable()).getTask().getKey().equals(key)) {
+                                imageReadyListener.onImageReady(imageFile, request, bm, target);
+                            }
+                        });
                     }
-                    return response;
+                } catch (Exception e) {
+                    ex = e;
                 }
+                final BoxResponse<BoxDownload> response = new BoxResponse<>(ret, ex, request);
+                if (ex != null){
+                    final ImageView target = targetRef.get();
+                    if (target != null) {
+                        target.post(() -> {
+                            imageReadyListener.onImageException(response, targetRef.get());
+                        });
+                    }
+                }
+                return response;
             };
             return new ThumbnailTask(callable, request, boxItem);
         }
@@ -187,6 +194,7 @@ public class LoaderDrawable extends BitmapDrawable {
          * @param bitmap           the bitmap
          * @param view             the view
          */
+        @UiThread
         void onImageReady(File bitmapSourceFile, BoxRequest request, Bitmap bitmap, ImageView view);
 
         /**
@@ -194,6 +202,7 @@ public class LoaderDrawable extends BitmapDrawable {
          * @param response the server response containing request and exception info
          * @param view the view
          */
+        @UiThread
         void onImageException(BoxResponse response, ImageView view);
     }
 }

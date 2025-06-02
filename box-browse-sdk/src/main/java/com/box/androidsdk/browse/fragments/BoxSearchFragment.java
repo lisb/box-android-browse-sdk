@@ -8,6 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.fragment.app.FragmentActivity;
 
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.activities.FilterSearchResults;
@@ -15,6 +18,7 @@ import com.box.androidsdk.browse.adapters.BoxItemAdapter;
 import com.box.androidsdk.browse.adapters.BoxSearchAdapter;
 import com.box.androidsdk.browse.adapters.ResultsHeader;
 import com.box.androidsdk.browse.models.BoxSearchFilters;
+import com.box.androidsdk.browse.models.BoxSessionDto;
 import com.box.androidsdk.browse.service.BoxResponseIntent;
 import com.box.androidsdk.browse.uidata.ThumbnailManager;
 import com.box.androidsdk.content.models.BoxFile;
@@ -27,10 +31,9 @@ import com.box.androidsdk.content.requests.BoxResponse;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import androidx.fragment.app.FragmentActivity;
 
 /**
  * Use the {@link com.box.androidsdk.browse.fragments.BoxSearchFragment.Builder} factory method to
@@ -253,17 +256,15 @@ public class BoxSearchFragment extends BoxBrowseFragment {
             mAdapter.removeAll();
             loadItems();
             mItems = null;
-            mAdapter.notifyDataSetChanged();
-            notifyUpdateListeners();
         } else {
             mRequest = null;
             mProgress.setVisibility(View.GONE);
             mSearchFiltersHeader.setVisibility(View.GONE);
             mItems = null;
             mAdapter.removeAll();
-            mAdapter.notifyDataSetChanged();
-            notifyUpdateListeners();
         }
+        mAdapter.notifyDataSetChanged();
+        notifyUpdateListeners();
     }
 
     /**
@@ -276,7 +277,9 @@ public class BoxSearchFragment extends BoxBrowseFragment {
     @Override
     protected void loadItems() {
         if (mRequest != null) {
-            mProgress.setVisibility(View.VISIBLE);
+            if (mItems == null) {
+                mProgress.setVisibility(View.VISIBLE);
+            }
             mOffset = 0;
             mRequest.setLimit(mLimit)
                     .setOffset(mOffset)
@@ -368,9 +371,6 @@ public class BoxSearchFragment extends BoxBrowseFragment {
         if (activity == null) {
             return;
         }
-        mProgress.setVisibility(View.GONE);
-        mSearchFiltersHeader.setVisibility(View.VISIBLE);
-
         mItems = new ArrayList<BoxItem>();
         mItems.addAll(items);
         if (mItems.size() > 0 && !(mItems.get(0) instanceof ResultsHeader)) {
@@ -385,8 +385,6 @@ public class BoxSearchFragment extends BoxBrowseFragment {
         if (activity == null) {
             return;
         }
-        mProgress.setVisibility(View.GONE);
-
         // Search can potentially have a lot of results so incremental loading and de-duping logic is needed
         final int startRange = mAdapter.getItemCount() > 0 ? mAdapter.getItemCount() - 1: 0;
 
@@ -440,38 +438,40 @@ public class BoxSearchFragment extends BoxBrowseFragment {
      * @param response the response received from Box server
      */
     protected void onItemsFetched(BoxResponse response) {
-        if (!response.isSuccess()) {
-            checkConnectivity();
-            return;
-        }
-
         if (response.getRequest().equals(mRequest)) {
-            ArrayList<String> removeIds = new ArrayList<String>(1);
-            removeIds.add(BoxSearchAdapter.LOAD_MORE_ID);
-            mAdapter.remove(removeIds);
+            if (!response.isSuccess()) {
+                mAdapter.remove(Collections.singletonList(BoxSearchAdapter.LOAD_MORE_ID));
+                mProgress.setVisibility(View.GONE);
+                checkConnectivity();
+                Toast.makeText(getContext(),
+                        R.string.box_browsesdk_problem_performing_search,
+                        Toast.LENGTH_LONG).show();
+            } else {
+                if (response.getResult() instanceof BoxIteratorItems) {
+                    mAdapter.remove(Collections.singletonList(BoxSearchAdapter.LOAD_MORE_ID));
+                    mProgress.setVisibility(View.GONE);
+                    BoxIteratorItems items = (BoxIteratorItems) response.getResult();
 
-            if (response.getResult() instanceof BoxIteratorItems) {
-                BoxIteratorItems items = (BoxIteratorItems) response.getResult();
+                    if (((BoxRequestsSearch.Search) response.getRequest()).getOffset() == 0) {
+                        mOffset = 0;
+                        updateTo(items.getEntries());
+                    } else {
+                        updateItems(items.getEntries());
+                    }
+                    mOffset += items.size();
 
-                if (((BoxRequestsSearch.Search) response.getRequest()).getOffset() == 0) {
-                    mOffset = 0;
-                    updateTo(items.getEntries());
-                } else {
-                    updateItems(items.getEntries());
+                    // If not all entries were fetched add a task to fetch more items if user scrolls to last entry.
+                    if (items.fullSize() != null && mOffset < items.fullSize()) {
+                        // The search endpoint returns a 400 bad request if the offset is not in multiples of the limit
+                        mOffset = calculateBestOffset(mOffset, mLimit);
+                        BoxRequestsSearch.Search incrementalSearchTask = mRequest
+                                .setOffset(mOffset)
+                                .setLimit(mLimit);
+                        ((BoxSearchAdapter) mAdapter).addLoadMoreItem(incrementalSearchTask);
+                    }
                 }
-                mOffset += items.size();
-
-                // If not all entries were fetched add a task to fetch more items if user scrolls to last entry.
-                if (items.fullSize() != null && mOffset < items.fullSize()) {
-                    // The search endpoint returns a 400 bad request if the offset is not in multiples of the limit
-                    mOffset = calculateBestOffset(mOffset, mLimit);
-                    BoxRequestsSearch.Search incrementalSearchTask = mRequest
-                            .setOffset(mOffset)
-                            .setLimit(mLimit);
-                    ((BoxSearchAdapter) mAdapter).addLoadMoreItem(incrementalSearchTask);
-                }
+                mSearchFiltersHeader.setVisibility(View.VISIBLE);
             }
-            mSearchFiltersHeader.setVisibility(View.VISIBLE);
         }
     }
 
@@ -502,7 +502,7 @@ public class BoxSearchFragment extends BoxBrowseFragment {
          * @param parentFolder the parent folder in which the search should be performed
          */
         public Builder(BoxSession session, String searchQuery, BoxFolder parentFolder) {
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
             mArgs.putInt(ARG_LIMIT, DEFAULT_LIMIT);
             mArgs.putString(OUT_QUERY, searchQuery);
             mArgs.putSerializable(EXTRA_PARENT_FOLDER, BoxFolder.createFromIdAndName(parentFolder.getId(), parentFolder.getName()));
@@ -517,7 +517,7 @@ public class BoxSearchFragment extends BoxBrowseFragment {
          * @param boxSearchFilters Filters to fine tune the search results based on file types, modification times etc.
          */
         public Builder(BoxSession session, String searchQuery, BoxFolder parentFolder, BoxSearchFilters boxSearchFilters) {
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
             mArgs.putInt(ARG_LIMIT, DEFAULT_LIMIT);
             mArgs.putString(OUT_QUERY, searchQuery);
             mArgs.putSerializable(EXTRA_PARENT_FOLDER, BoxFolder.createFromIdAndName(parentFolder.getId(), parentFolder.getName()));
@@ -531,7 +531,7 @@ public class BoxSearchFragment extends BoxBrowseFragment {
          * @param parentFolder the parent folder
          */
         public Builder(BoxSession session, BoxFolder parentFolder) {
-            mArgs.putString(ARG_USER_ID, session.getUserId());
+            mArgs.putSerializable(ARG_SESSION, BoxSessionDto.marshal(session));
             mArgs.putInt(ARG_LIMIT, DEFAULT_LIMIT);
             mArgs.putSerializable(EXTRA_PARENT_FOLDER, BoxFolder.createFromIdAndName(parentFolder.getId(), parentFolder.getName()));
         }
