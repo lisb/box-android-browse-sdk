@@ -1,13 +1,22 @@
-apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+}
 
 android {
-    compileSdkVersion 28
+    namespace "com.box.androidsdk.browse"
+
+    compileSdk rootProject.tools.compileSdk
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 28
+        minSdk rootProject.tools.minSdk
+        targetSdk rootProject.tools.targetSdk
+
+        versionName "${rootProject.tools.versionName}"
+
         vectorDrawables.useSupportLibrary = true
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -23,15 +32,14 @@ android {
         abortOnError false
     }
 
-    dexOptions {
-        jumboMode = true
-        javaMaxHeapSize = "4g"
+    publishing {
+        publishing {
+            singleVariant("release") {
+                withSourcesJar()
+                withJavadocJar()
+            }
+        }
     }
-}
-
-repositories {
-    mavenCentral()
-    jcenter()
 }
 
 dependencies {
@@ -42,4 +50,51 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.0.0"
 }
 
-apply from: '../maven_push.gradle'
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/lisb/box-android-browse-sdk"
+            credentials {
+                username = gradle.localProps["gpr.user"] ?: System.getenv("MVN_GITHUB_PACKAGES_USERNAME")
+                password = gradle.localProps["gpr.key"] ?: System.getenv("MVN_GITHUB_PACKAGES_TOKEN")
+            }
+        }
+    }
+
+    publications {
+        release(MavenPublication) {
+            groupId = "com.lisb.android.box"
+            artifactId = "box-android-browse-sdk"
+            version = "${rootProject.tools.versionName}"
+
+            pom {
+                name = "Android Box Browse SDK"
+                description = "LisB Fork of Box Android Browse SDK ${rootProject.tools.versionName}"
+                url = "https://github.com/lisb/box-android-browse-sdk"
+                scm {
+                    url = "https://github.com/lisb/box-android-browse-sdk"
+                    connection = "scm:git@github.com:lisb/box-android-browse-sdk.git"
+                }
+
+                licenses {
+                    license {
+                        name = "The Apache Software License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = "lisb"
+                        name = "L is B corp."
+                    }
+                }
+            }
+
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+}

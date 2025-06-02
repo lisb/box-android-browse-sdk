@@ -1,15 +1,25 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
-    compileSdkVersion 28
+    namespace "com.box.androidsdk.browse.sample"
+
+    compileSdk rootProject.tools.compileSdk
 
     defaultConfig {
-        applicationId "box.com.androidsdk.sample"
-        minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 2
-        versionName "2.0"
+        minSdk rootProject.tools.minSdk
+        targetSdk rootProject.tools.targetSdk
+
+        versionCode rootProject.tools.versionCode
+        versionName "${rootProject.tools.versionName}"
+
+        // BoxのOAuth用の設定をリソース化
+        resValue "string", "box_clientId", gradle.localProps["box.client_id"]
+        resValue "string", "box_clientSecret", gradle.localProps["box.client_secret"]
+        resValue "string", "box_redirectUrl", gradle.localProps["box.redirect_url"]
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -24,15 +34,6 @@ android {
     lintOptions {
         abortOnError false
     }
-
-    dexOptions {
-        jumboMode = true
-        javaMaxHeapSize = "4g"
-    }
-}
-repositories {
-    mavenCentral()
-    jcenter()
 }
 
 dependencies {

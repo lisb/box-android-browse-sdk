@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.box.androidsdk.browse.activities.BoxBrowseFileActivity;
 import com.box.androidsdk.browse.activities.BoxBrowseFolderActivity;
+import com.box.androidsdk.browse.sample.R;
 import com.box.androidsdk.browse.service.BoxSimpleLocalCache;
 import com.box.androidsdk.content.BoxConfig;
 import com.box.androidsdk.content.models.BoxFolder;
@@ -37,8 +38,9 @@ public class SampleBrowseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sample_browse);
         BoxConfig.IS_LOG_ENABLED = true;
-        BoxConfig.CLIENT_ID = "your-client-id";
-        BoxConfig.CLIENT_SECRET = "your-client-secret";
+        BoxConfig.CLIENT_ID = getString(R.string.box_clientId);
+        BoxConfig.CLIENT_SECRET = getString(R.string.box_clientSecret);
+        BoxConfig.REDIRECT_URL = getString(R.string.box_redirectUrl);
 
         // Optional: Setting an implementation of a cache will allow the browse sdk to immediately show
         // data to the user while waiting for server data.
@@ -51,14 +53,14 @@ public class SampleBrowseActivity extends AppCompatActivity {
 
     private void launchFilePicker() {
         startActivityForResult(BoxBrowseFileActivity.getLaunchIntent(this,
-                BoxFolder.createFromIdAndName(ROOT_FOLDER_ID, getString(R.string.box_browsesdk_all_files)),
+                BoxFolder.createFromIdAndName(ROOT_FOLDER_ID, getString(com.box.androidsdk.browse.R.string.box_browsesdk_all_files)),
                 session),
                 REQUEST_CODE_FILE_PICKER);
     }
 
     private void launchFolderPicker() {
         startActivityForResult(BoxBrowseFolderActivity.getLaunchIntent(this,
-                BoxFolder.createFromIdAndName(ROOT_FOLDER_ID, getString(R.string.box_browsesdk_all_files)),
+                BoxFolder.createFromIdAndName(ROOT_FOLDER_ID, getString(com.box.androidsdk.browse.R.string.box_browsesdk_all_files)),
                 session),
                 REQUEST_CODE_FOLDER_PICKER);
     }

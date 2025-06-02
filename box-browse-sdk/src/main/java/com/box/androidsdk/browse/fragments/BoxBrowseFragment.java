@@ -209,7 +209,7 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
         mSwipeRefresh = (SwipeRefreshLayout) mRootView.findViewById(R.id.box_browsesdk_swipe_reresh);
         if (mSwipeRefresh != null) {
             mSwipeRefresh.setOnRefreshListener(this);
-            mSwipeRefresh.setColorSchemeColors(R.color.box_accent);
+            mSwipeRefresh.setColorSchemeColors(requireContext().getColor(com.box.sdk.android.R.color.box_accent));
             // This is a work around to show the loading circle because SwipeRefreshLayout.onMeasure must be called before setRefreshing to show the animation
             mSwipeRefresh.setProgressViewOffset(false, 0, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
         }
