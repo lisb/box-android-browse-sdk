@@ -1,6 +1,10 @@
 plugins {
     id 'com.android.library'
     id 'maven-publish'
+    // このプロジェクト本体ではKotlinを使ってないが、
+    // 依存先のライブラリが利用していてそれらでKotlinのバージョンがコンフリクトしていてビルドできないため、
+    // このプロジェクトでバージョンを指定
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -28,6 +32,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        // このプロジェクト本体ではKotlinを使ってないが、
+        // 依存先のライブラリが利用していてそれらでKotlinのバージョンがコンフリクトしていてビルドできないため、
+        // このプロジェクトでバージョンを指定
+        jvmTarget = '1.8'
+    }
+
     lintOptions {
         abortOnError false
     }
@@ -45,9 +56,12 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    api 'com.box:box-android-sdk:5.99.728-SNAPSHOT'
-    implementation "androidx.appcompat:appcompat:1.0.2"
-    implementation "androidx.recyclerview:recyclerview:1.0.0"
+    api 'com.box:box-android-sdk:5.0.0'
+
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    implementation "androidx.recyclerview:recyclerview:1.4.0"
 }
 
 publishing {
