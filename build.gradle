@@ -1,6 +1,10 @@
 plugins {
     id 'com.android.application' version '8.9.1' apply false
     id 'com.android.library' version '8.9.1' apply false
+    // このプロジェクト本体ではKotlinを使ってないが、
+    // 依存先のライブラリが利用していてそれらでKotlinのバージョンがコンフリクトしていてビルドできないため、
+    // このプロジェクトでバージョンを指定
+    id 'org.jetbrains.kotlin.android' version '2.1.20' apply false
 }
 
 ext {
