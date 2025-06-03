@@ -214,7 +214,7 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
      * Shows the spinner with the default wait messaging
      */
     protected void showSpinner(){
-        showSpinner(R.string.boxsdk_Please_wait, R.string.boxsdk_Please_wait);
+        showSpinner(com.box.sdk.android.R.string.boxsdk_Please_wait, R.string.box_browsesdk_tap_to_retry);
     }
 
     /**
@@ -309,8 +309,8 @@ public abstract class BoxThreadPoolExecutorActivity extends AppCompatActivity {
         String combined = title +"\n"+ description;
         Spannable accessSpannable = new SpannableString(combined);
 
-        accessSpannable.setSpan(new TextAppearanceSpan(this, R.style.Base_TextAppearance_AppCompat_Body1), title.length(),combined.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        accessSpannable.setSpan(new ForegroundColorSpan(R.color.box_hint_foreground), title.length(),combined.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        accessSpannable.setSpan(new TextAppearanceSpan(this, androidx.appcompat.R.style.Base_TextAppearance_AppCompat_Body1), title.length(),combined.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        accessSpannable.setSpan(new ForegroundColorSpan(getColor(com.box.sdk.android.R.color.box_hint_foreground)), title.length(),combined.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return accessSpannable;
     }
 

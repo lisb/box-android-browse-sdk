@@ -1,9 +1,11 @@
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <style name="BrowseTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/box_browsesdk_primary</item>
         <item name="colorPrimaryDark">@color/box_browsesdk_primary_dark</item>
         <item name="colorAccent">@color/box_browsesdk_accent</item>
         <item name="searchViewStyle">@style/Widget.AppCompat.SearchView.ActionBar</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
 
     <style name="BoxDialogTitle" parent="@style/TextAppearance.AppCompat.Title">

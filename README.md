@@ -1,88 +1,20 @@
-Box Android Browse SDK
-==============
-This SDK enables the ability to easily browse through Box storage to pick a folder/file.
+[box/box-android-browse-sdk](https://github.com/box/box-android-browse-sdk) のフォーク。
 
-Developer Setup
---------------
-The SDK can be obtained by adding it as a maven dependency, cloning the source into your project, or by downloading one of the precompiled JARs from the releases page on GitHub.
+[box/box-android-browse-sdk](https://github.com/box/box-android-browse-sdk) は deprecated になっているので必要な修正や更新を独自に実施。
 
-Gradle: 
-```groovy 
-implementation 'com.box:box-android-browse-sdk:3.0.0'
+### 開発用設定
+
+サンプルアプリを実行する場合は `local.properties` に以下を指定。
+
 ```
-Maven: 
-```xml
-<dependency>
-    <groupId>com.box</groupId>
-    <artifactId>box-android-browse-sdk</artifactId>
-    <version>3.0.0</version>
-</dependency>
+box.client_id=${BoxのOAuthのクライアントID}
+box.client_secret=${BoxのOAuthのクライアントシークレット}
+box.redirect_url=${BoxのOAuthのリダイレクト先}
 ```
 
-If not using Gradle or Maven, this SDK has the following dependencies and will need to be included in your project:
-* [box-android-sdk](https://github.com/box/box-android-sdk) (maven: `com.box:box-android-sdk:5.0.0`)
+GitHub Repositories にライブラリを配置する場合は `local.properties`　に以下を指定。
 
-The SDK was migrated to AndroidX in version 3.0.0. Latest stable version with support library is 2.1.0.
-
-Quickstart
---------------
-You will need a BoxSession and the BoxItem from the [box-content-sdk](https://github.com/box/box-android-content-sdk). Please refer to the documentation of the box-content-sdk for additional details.
-```java
-    BoxSession session = new BoxSession(MainActivity.this);
-    BoxFolder folder = new BoxApiFolder(session).getInfo("<FOLDER_ID>").send();
 ```
-####File Picker
-To launch the activity to browse a given folder and pick a file:
-```java
-    startActivityForResult(BoxBrowseFileActivity.getLaunchIntent(MainActivity.this, "<FOLDER_ID>", session), "<YOUR_REQUEST_CODE>");
+gpr.user=${GitHubのメールアドレス}
+gpr.key=${GitHubのアクセストークン}
 ```
-
-To receive the result from the file picker after you picked a file, implement onActivityResult in your activity:
-```java
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode ==  "<YOUR_REQUEST_CODE>") {
-            if (resultCode == Activity.RESULT_OK) {
-                BoxFile boxFile = (BoxFile) data.getSerializableExtra(FilePickerActivity.EXTRA_BOX_FILE);
-                // Your own code to handle boxFile goes here.
-            } else {
-                // Your error handling code.
-            }
-        }
-    }
-```
-
-####Folder Picker
-To launch the activity to browse a given folder and pick a folder:
-```java
-    startActivityForResult(BoxBrowseFolderActivity.getLaunchIntent(MainActivity.this, "<FOLDER_ID>", session),  "<YOUR_REQUEST_CODE>");
-```
-
-To receive the result from the file picker after you picked a folder, implement onActivityResult in your activity:
-```java
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode ==  "<YOUR_REQUEST_CODE>") {
-            if (resultCode == Activity.RESULT_OK) {
-                BoxFolder boxFolder = (BoxFolder) data.getSerializableExtra(FolderPickerActivity.EXTRA_BOX_FOLDER);
-                // Your own code to handle boxFile goes here.
-            } else {
-                // Your error handling code.
-            }
-        }
-    }
-```
-
-Sample App
---------------
-A sample app can be found in the [box-browse-sample](https://github.com/box/box-android-browse-sdk/tree/master/box-browse-sample) folder.
-
-Copyright and License
---------------
-Copyright 2015 Box, Inc. All rights reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

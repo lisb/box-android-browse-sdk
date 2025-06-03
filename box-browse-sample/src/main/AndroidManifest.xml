@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.box.androidsdk.sample" >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
@@ -9,8 +8,8 @@
         android:label="@string/box_browsesdk_title"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".SampleBrowseActivity"
-            android:label="@string/box_browsesdk_title"
+            android:name="com.box.androidsdk.sample.SampleBrowseActivity"
+            android:exported="true"
             android:configChanges="orientation|keyboard">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
