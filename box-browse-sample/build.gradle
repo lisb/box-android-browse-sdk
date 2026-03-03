@@ -5,11 +5,11 @@ plugins {
 android {
     namespace "com.box.androidsdk.browse.sample"
 
-    compileSdk rootProject.tools.compileSdk
+    compileSdk = rootProject.tools.compileSdk
 
     defaultConfig {
-        minSdk rootProject.tools.minSdk
-        targetSdk rootProject.tools.targetSdk
+        minSdk = rootProject.tools.minSdk
+        targetSdk = rootProject.tools.targetSdk
 
         versionCode rootProject.tools.versionCode
         versionName "${rootProject.tools.versionName}"
@@ -23,20 +23,20 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-    lintOptions {
+    lint {
         abortOnError false
     }
+
 }
 
 dependencies {
     implementation project(':box-browse-sdk')
-    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.appcompat:appcompat:1.7.1"
 }
