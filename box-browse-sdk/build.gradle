@@ -1,46 +1,28 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id 'com.android.library'
     id 'maven-publish'
-    // このプロジェクト本体ではKotlinを使ってないが、
-    // 依存先のライブラリが利用していてそれらでKotlinのバージョンがコンフリクトしていてビルドできないため、
-    // このプロジェクトでバージョンを指定
-    id 'org.jetbrains.kotlin.android'
 }
 
 android {
     namespace "com.box.androidsdk.browse"
 
-    compileSdk rootProject.tools.compileSdk
+    compileSdk = rootProject.tools.compileSdk
 
     defaultConfig {
-        minSdk rootProject.tools.minSdk
-        targetSdk rootProject.tools.targetSdk
-
-        versionName "${rootProject.tools.versionName}"
-
+        minSdk = rootProject.tools.minSdk
         vectorDrawables.useSupportLibrary = true
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        // このプロジェクト本体ではKotlinを使ってないが、
-        // 依存先のライブラリが利用していてそれらでKotlinのバージョンがコンフリクトしていてビルドできないため、
-        // このプロジェクトでバージョンを指定
-        jvmTarget = '1.8'
-    }
-
-    lintOptions {
-        abortOnError false
     }
 
     publishing {
@@ -51,6 +33,22 @@ android {
             }
         }
     }
+    lint {
+        abortOnError false
+        targetSdk = rootProject.tools.targetSdk
+    }
+    testOptions {
+        targetSdk = rootProject.tools.targetSdk
+    }
+}
+
+kotlin {
+    compilerOptions {
+        // このプロジェクト本体ではKotlinを使ってないが、
+        // 依存先のライブラリが利用していてそれらでKotlinのバージョンがコンフリクトしていてビルドできないため、
+        // このプロジェクトでバージョンを指定
+        jvmTarget = JvmTarget.JVM_1_8
+    }
 }
 
 dependencies {
@@ -58,9 +56,9 @@ dependencies {
 
     api 'com.box:box-android-sdk:5.0.0'
 
-    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.appcompat:appcompat:1.7.1"
     implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.2.0"
     implementation "androidx.recyclerview:recyclerview:1.4.0"
 }
 
