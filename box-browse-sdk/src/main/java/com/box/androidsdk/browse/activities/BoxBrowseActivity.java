@@ -102,7 +102,9 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
         mRecentSearchesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String query = mRecentSearchesAdapter.getItem(position - mRecentSearchesListView.getHeaderViewsCount());
+                position = position - mRecentSearchesListView.getHeaderViewsCount();
+                if (position < 0) return;
+                String query = mRecentSearchesAdapter.getItem(position);
                 mSearchView.setQuery(query, false);
             }
         });
@@ -151,7 +153,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
             // Launch search experience
             return true;
         } else if (id == android.R.id.home) {
-            onBackPressed();
+            getOnBackPressedDispatcher().onBackPressed();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
