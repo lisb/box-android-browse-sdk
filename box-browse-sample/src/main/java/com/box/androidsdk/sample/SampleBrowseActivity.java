@@ -1,11 +1,20 @@
 package com.box.androidsdk.sample;
 
+import static androidx.core.view.WindowInsetsCompat.Type.displayCutout;
+import static androidx.core.view.WindowInsetsCompat.Type.systemBars;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.box.androidsdk.browse.activities.BoxBrowseFileActivity;
 import com.box.androidsdk.browse.activities.BoxBrowseFolderActivity;
@@ -15,8 +24,6 @@ import com.box.androidsdk.content.BoxConfig;
 import com.box.androidsdk.content.models.BoxFolder;
 import com.box.androidsdk.content.models.BoxItem;
 import com.box.androidsdk.content.models.BoxSession;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.Serializable;
 
@@ -28,15 +35,25 @@ public class SampleBrowseActivity extends AppCompatActivity {
 
     public static final String ROOT_FOLDER_ID = "0";
 
-    private Button btnFilePicker;
-    private Button btnFolderPicker;
-
     private BoxSession session;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.enableEdgeToEdge(getWindow());
         setContentView(R.layout.activity_sample_browse);
+        final Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        final View root = findViewById(R.id.root);
+        ViewCompat.setOnApplyWindowInsetsListener(root,
+                (v, windowInsets) -> {
+                    final Insets insets = windowInsets.getInsets(displayCutout() | systemBars());
+                    root.setPadding(insets.left, 0, insets.right, 0);
+                    toolbar.setPadding(0, insets.top, 0, 0);
+                    return WindowInsetsCompat.CONSUMED;
+                });
+
         BoxConfig.IS_LOG_ENABLED = true;
         BoxConfig.CLIENT_ID = getString(R.string.box_clientId);
         BoxConfig.CLIENT_SECRET = getString(R.string.box_clientSecret);
@@ -78,8 +95,6 @@ public class SampleBrowseActivity extends AppCompatActivity {
                                         boxItem.getId(), boxItem.getName(), boxItem.getSharedLink().getURL()),
                                 Toast.LENGTH_LONG).show();
                     }
-                } else {
-                    // No file selected
                 }
                 break;
             case REQUEST_CODE_FOLDER_PICKER:
@@ -88,28 +103,15 @@ public class SampleBrowseActivity extends AppCompatActivity {
                     if (boxFolder != null) {
                         Toast.makeText(this, String.format("Folder picked, id: %s; name: %s", boxFolder.getId(), boxFolder.getName()), Toast.LENGTH_LONG).show();
                     }
-                } else {
-                    // No folder selected
                 }
                 break;
             default:
+                super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
     private void initUI() {
-        btnFilePicker = (Button) findViewById(R.id.btnFilePicker);
-        btnFolderPicker = (Button) findViewById(R.id.btnFolderPicker);
-        btnFilePicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchFilePicker();
-            }
-        });
-        btnFolderPicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchFolderPicker();
-            }
-        });
+        findViewById(R.id.btnFilePicker).setOnClickListener(view -> launchFilePicker());
+        findViewById(R.id.btnFolderPicker).setOnClickListener(view -> launchFolderPicker());
     }
 }

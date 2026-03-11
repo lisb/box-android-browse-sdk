@@ -1,21 +1,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/box_browsesdk_horizontal_margin"
-    android:paddingRight="@dimen/box_browsesdk_horizontal_margin"
-    android:paddingTop="@dimen/box_browsesdk_vertical_margin"
-    android:paddingBottom="@dimen/box_browsesdk_vertical_margin"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".SampleBrowseActivity">
+    tools:context="com.box.androidsdk.sample.SampleBrowseActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
 
     <Button
         android:text="File Picker"
         android:layout_height="60dp"
         android:layout_width="wrap_content"
+        android:layout_marginVertical="@dimen/box_browsesdk_vertical_margin"
+        android:layout_marginHorizontal="@dimen/box_browsesdk_horizontal_margin"
         android:id="@+id/btnFilePicker" />
     <Button
         android:text="Folder Picker"
         android:layout_height="60dp"
         android:layout_width="wrap_content"
-        android:id="@+id/btnFolderPicker" />
+        android:layout_marginVertical="@dimen/box_browsesdk_vertical_margin"
+        android:layout_marginHorizontal="@dimen/box_browsesdk_horizontal_margin"
+        android:id="@+id/btnFolderPicker"
+        />
 
 </LinearLayout>

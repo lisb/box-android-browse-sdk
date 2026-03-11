@@ -1,11 +1,22 @@
 package com.box.androidsdk.browse.activities;
 
+import static androidx.core.view.WindowInsetsCompat.Type.displayCutout;
+import static androidx.core.view.WindowInsetsCompat.Type.ime;
+import static androidx.core.view.WindowInsetsCompat.Type.systemBars;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
 import android.widget.Toast;
+
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.ViewGroupCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.models.BoxSessionDto;
@@ -37,12 +48,30 @@ public class BoxBrowseFileActivity extends BoxBrowseActivity {
      */
     public static final String EXTRA_BOX_EXTENSION_FILTER = "extraBoxExtensionFilter";
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.enableEdgeToEdge(getWindow());
         setContentView(R.layout.box_browsesdk_activity_file);
+        final View root = findViewById(R.id.root);
+        final View toolbar = findViewById(R.id.box_action_bar);
+        final View recentSearches = findViewById(R.id.recentSearchesListView);
+        final View fragmentContainer = findViewById(R.id.box_browsesdk_fragment_container);
+        ViewGroupCompat.installCompatInsetsDispatch(root);
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, windowInsets) -> {
+            final Insets insets = windowInsets.getInsets(displayCutout() | systemBars() | ime());
+            root.setPadding(insets.left, 0, insets.right, 0);
+            toolbar.setPadding(0, insets.top, 0, 0);
+            recentSearches.setPadding(0, 0, 0, insets.bottom);
+
+            ViewCompat.dispatchApplyWindowInsets(
+                    fragmentContainer,
+                    windowInsets.inset(insets.left, insets.top, insets.right, 0)
+            );
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+
         initToolbar();
         initRecentSearches();
         if (getSupportFragmentManager().getBackStackEntryCount() < 1){

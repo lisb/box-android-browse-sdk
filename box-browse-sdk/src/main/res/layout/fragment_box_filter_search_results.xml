@@ -195,37 +195,36 @@
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
+            android:gravity="center_vertical|right"
             android:background="@android:color/white"
             android:id="@+id/clear_apply_bar"
-            android:layout_height="48dp">
+            >
+
             <Button
                 style="@style/BorderlessButton"
-                android:paddingLeft="24dp"
-                android:layout_toLeftOf="@+id/apply_button"
                 android:text="@string/clear_filters"
                 android:textColor="@color/filter_search_buttons"
                 android:id="@+id/clear_filters_button"
-                android:layout_centerVertical="true" />
+                />
             <Button
+                style="@style/BorderlessButton"
                 android:id="@+id/apply_button"
                 android:text="@string/apply"
-                android:paddingRight="24dp"
-                style="@style/BorderlessButton"
                 android:textColor="@color/filter_search_buttons"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true" />
-            <View
-                android:layout_width="match_parent"
-                android:background="?android:attr/listDivider"
-                android:layout_alignParentTop="true"
-                android:layout_height="1dp"/>
-        </RelativeLayout>
+                />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider"
+            android:layout_above="@+id/clear_apply_bar"
+            />
+
     </RelativeLayout>
 
 </FrameLayout>

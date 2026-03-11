@@ -1,48 +1,53 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/box_background">
-    <include layout="@layout/box_browsesdk_toolbar"
-        android:id="@+id/mainToolbar"/>
-    <FrameLayout
+    android:background="@color/box_background"
+    >
+
+    <androidx.appcompat.widget.Toolbar
+        style="@style/BoxToolbar"
+        android:id="@+id/box_action_bar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/mainToolbar">
+        android:layout_height="wrap_content"
+        />
+
+    <FrameLayout
+        android:id="@+id/footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
         <View
             android:layout_width="match_parent"
-            android:layout_height="6dp"
-            android:background="@drawable/box_toolbar_dropshadow" />
-        <FrameLayout
-            android:id="@+id/box_browsesdk_fragment_container"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+        <Button
+            android:id="@+id/box_browsesdk_select_folder_button"
+            style="@style/BoxDialogButton"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="@dimen/box_browsesdk_persistent_footer_height">
-        </FrameLayout>
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/box_browsesdk_persistent_footer_height"
-            android:layout_gravity="bottom">
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="?android:attr/listDivider" />
-            <Button
-                android:id="@+id/box_browsesdk_select_folder_button"
-                style="@style/BoxDialogButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="@string/box_browsesdk_select_folder" />
-        </FrameLayout>
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="@string/box_browsesdk_select_folder" />
     </FrameLayout>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/box_browsesdk_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/box_action_bar"
+        android:layout_above="@id/footer"
+        />
+
     <ListView
         android:id="@+id/recentSearchesListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/mainToolbar"
+        android:layout_below="@id/box_action_bar"
         android:background="#55000000"
         android:visibility="gone"
         android:dividerHeight="0dp"
-        android:divider="@null"/>
+        android:divider="@null"
+        android:clipToPadding="false"
+        />
 </RelativeLayout>

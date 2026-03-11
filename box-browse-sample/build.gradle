@@ -38,5 +38,6 @@ android {
 
 dependencies {
     implementation project(':box-browse-sdk')
+    implementation "androidx.core:core:1.17.0"
     implementation "androidx.appcompat:appcompat:1.7.1"
 }

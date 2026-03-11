@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:orientation="vertical"
     tools:context="com.box.androidsdk.browse.activities.FilterSearchResults"
-    android:background="#FFFFFF">
+    >
 
-    <FrameLayout
+    <androidx.appcompat.widget.Toolbar
+        style="@style/BoxToolbar"
+        android:id="@+id/box_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </FrameLayout>
-</RelativeLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        />
+
+</LinearLayout>

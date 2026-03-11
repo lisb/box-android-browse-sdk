@@ -7,7 +7,6 @@
     <color name="box_browsesdk_primary">#ffe0e0e0</color>
     <color name="box_browsesdk_primary_dark">#ff9e9e9e</color>
     <color name="box_browsesdk_divider">#14bdc3c7</color>
-    <color name="box_browsesdk_shadow">#88333333</color>
     <color name="box_browsesdk_list_background">#ffffff</color>
 
     <color name="box_browsesdk_media_list_background">@color/box_browsesdk_list_background</color>

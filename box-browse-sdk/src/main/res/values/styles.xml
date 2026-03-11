@@ -1,11 +1,12 @@
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<resources
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
     <style name="BrowseTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/box_browsesdk_primary</item>
         <item name="colorPrimaryDark">@color/box_browsesdk_primary_dark</item>
         <item name="colorAccent">@color/box_browsesdk_accent</item>
         <item name="searchViewStyle">@style/Widget.AppCompat.SearchView.ActionBar</item>
-        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 
     <style name="BoxDialogTitle" parent="@style/TextAppearance.AppCompat.Title">
@@ -74,6 +75,12 @@
         <item name="android:minHeight">40dp</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:background">@drawable/button_settings_states2</item>
+    </style>
+
+    <style name="BoxToolbar">
+        <item name="android:background">?colorPrimary</item>
+        <item name="contentInsetStart">0dp</item>
+        <item name="contentInsetEnd">0dp</item>
     </style>
 
 </resources>

@@ -12,7 +12,9 @@
             android:id="@+id/box_browsesdk_items_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/box_browsesdk_list_background"/>
+            android:background="@color/box_browsesdk_list_background"
+            android:clipToPadding="false"
+            />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <ImageView
