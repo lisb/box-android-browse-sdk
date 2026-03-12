@@ -6,11 +6,9 @@
     <dimen name="box_browsesdk_list_item_height">72dp</dimen>
     <dimen name="box_browsesdk_media_list_item_height">120dp</dimen>
 
-    <dimen name="box_browsesdk_list_footer_padding">60dp</dimen>
     <dimen name="box_browsesdk_list_item_description_margin">72dp</dimen>
 
     <dimen name="box_browsesdk_secondary_action_width">56dp</dimen>
-    <dimen name="box_browsesdk_persistent_footer_height">48dp</dimen>
     <dimen name="box_browsesdk_thumb_width">40dp</dimen>
     <dimen name="box_browsesdk_thumb_padding">3dp</dimen>
     <dimen name="box_browsesdk_list_item_text_size">16sp</dimen>

@@ -22,6 +22,7 @@
 
     <string description="Default hint text for Search View" name="default_search_hint">検索</string>
     <string description="Label for button that launches screen to filter search results" name="filter_results_header">検索結果にフィルタを適用</string>
+    <string name="filter_search_results">検索結果をフィルタ</string>
     <string description="label for apply button in refine search results activity" name="apply">適用</string>
     <string description="label for clear filters button in refine search results activity" name="clear_filters">フィルタをクリア</string>
     <string description="Header for section that let you select file types to search for" name="file_type_label">ファイルの種類</string>

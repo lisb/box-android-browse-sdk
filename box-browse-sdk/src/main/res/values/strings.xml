@@ -22,6 +22,7 @@
 
     <string name="default_search_hint" description="Default hint text for Search View">Search</string>
     <string name="filter_results_header" description="Label for button that launches screen to filter search results">Filter Results</string>
+    <string name="filter_search_results">Filter Search Results</string>
     <string name="apply" description="label for apply button in refine search results activity">Apply</string>
     <string name="clear_filters" description="label for clear filters button in refine search results activity">Clear Filters</string>
     <string name="file_type_label" description="Header for section that let you select file types to search for">File Type</string>

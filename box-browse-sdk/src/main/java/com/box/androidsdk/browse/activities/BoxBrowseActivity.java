@@ -96,13 +96,15 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
     public void initRecentSearches() {
         mRecentSearchesHeader = getLayoutInflater().inflate(com.box.androidsdk.browse.R.layout.box_browsesdk_recent_searches_header, null);
         mRecentSearchesFooter = getLayoutInflater().inflate(com.box.androidsdk.browse.R.layout.box_browsesdk_recent_searches_footer, null);
-        mRecentSearchesListView = (ListView) findViewById(R.id.recentSearchesListView);
+        mRecentSearchesListView = findViewById(R.id.recentSearchesListView);
         mRecentSearchesListView.addHeaderView(mRecentSearchesHeader);
         mRecentSearchesListView.addFooterView(mRecentSearchesFooter);
         mRecentSearchesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String query = mRecentSearchesAdapter.getItem(position - mRecentSearchesListView.getHeaderViewsCount());
+                position = position - mRecentSearchesListView.getHeaderViewsCount();
+                if (position < 0 || position >= mRecentSearchesAdapter.getCount()) return;
+                String query = mRecentSearchesAdapter.getItem(position);
                 mSearchView.setQuery(query, false);
             }
         });
@@ -151,7 +153,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
             // Launch search experience
             return true;
         } else if (id == android.R.id.home) {
-            onBackPressed();
+            getOnBackPressedDispatcher().onBackPressed();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -260,7 +262,7 @@ public abstract class BoxBrowseActivity extends BoxThreadPoolExecutorActivity im
 
     private void setRecentViewVisible(final boolean visible) {
         mRecentSearchesListView.setVisibility(visible? View.VISIBLE : View.GONE);
-        if (mRecentSearches == null || mRecentSearches.size() == 0) {
+        if (mRecentSearches == null || mRecentSearches.isEmpty()) {
             mRecentSearchesHeader.setVisibility(View.GONE);
             mRecentSearchesFooter.setVisibility(View.GONE);
         } else {

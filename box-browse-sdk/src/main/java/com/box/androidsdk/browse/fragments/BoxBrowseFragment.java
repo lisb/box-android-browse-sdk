@@ -1,12 +1,15 @@
 package com.box.androidsdk.browse.fragments;
 
+import static androidx.core.view.WindowInsetsCompat.Type.displayCutout;
+import static androidx.core.view.WindowInsetsCompat.Type.ime;
+import static androidx.core.view.WindowInsetsCompat.Type.systemBars;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -18,6 +21,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -244,9 +252,18 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
         return mRootView;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+            final Insets insets = windowInsets.getInsets(displayCutout() | systemBars() | ime());
+            mItemsView.setPadding(0, 0, 0, insets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+    }
+
     protected void initRecyclerView(RecyclerView view){
         view.addItemDecoration(new BoxItemDividerDecoration(getResources()));
-        view.addItemDecoration(new FooterDecoration(getResources()));
         view.setLayoutManager(new LinearLayoutManager(getActivity()));
         if (view.getItemAnimator() instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) view.getItemAnimator()).setSupportsChangeAnimations(false);
@@ -697,27 +714,6 @@ public abstract class BoxBrowseFragment extends Fragment implements SwipeRefresh
 
                 mDivider.setBounds(left, top, right, bottom);
                 mDivider.draw(c);
-            }
-        }
-    }
-
-    private static class FooterDecoration extends RecyclerView.ItemDecoration {
-        private final int mFooterPadding;
-
-        /**
-         * Instantiates a new Footer decoration.
-         *
-         * @param resources the resources
-         */
-        public FooterDecoration(Resources resources) {
-            mFooterPadding = (int) resources.getDimension(R.dimen.box_browsesdk_list_footer_padding);
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            super.getItemOffsets(outRect, view, parent, state);
-            if (parent.getChildAdapterPosition(view) == parent.getAdapter().getItemCount() -1) {
-                outRect.bottom = mFooterPadding;
             }
         }
     }

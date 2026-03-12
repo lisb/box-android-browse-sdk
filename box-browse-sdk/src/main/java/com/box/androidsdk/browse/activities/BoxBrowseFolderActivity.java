@@ -1,5 +1,9 @@
 package com.box.androidsdk.browse.activities;
 
+import static androidx.core.view.WindowInsetsCompat.Type.displayCutout;
+import static androidx.core.view.WindowInsetsCompat.Type.ime;
+import static androidx.core.view.WindowInsetsCompat.Type.systemBars;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +14,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.box.androidsdk.browse.R;
 import com.box.androidsdk.browse.fragments.BoxBrowseFragment;
@@ -111,9 +119,24 @@ public class BoxBrowseFolderActivity extends BoxBrowseActivity implements View.O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.enableEdgeToEdge(getWindow());
         setContentView(R.layout.box_browsesdk_activity_folder);
 
-        mSelectFolderButton = (Button) findViewById(R.id.box_browsesdk_select_folder_button);
+        final View root = findViewById(R.id.root);
+        final View toolbar = findViewById(R.id.box_action_bar);
+        final View footer = findViewById(R.id.footer);
+        final View recentSearches = findViewById(R.id.recentSearchesListView);
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, windowInsets) -> {
+            final Insets insets = windowInsets.getInsets(displayCutout() | systemBars() | ime());
+            root.setPadding(insets.left, 0, insets.right, 0);
+            toolbar.setPadding(0, insets.top, 0, 0);
+            recentSearches.setPadding(0, 0, 0, insets.bottom);
+            footer.setPadding(0, 0, 0, insets.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+        mSelectFolderButton = findViewById(R.id.box_browsesdk_select_folder_button);
         mSelectFolderButton.setOnClickListener(this);
         initToolbar();
         initRecentSearches();
@@ -168,8 +191,6 @@ public class BoxBrowseFolderActivity extends BoxBrowseActivity implements View.O
                 if (response.getException() instanceof BoxException) {
                     if (((BoxException) response.getException()).getResponseCode() == HttpURLConnection.HTTP_CONFLICT) {
                         resId = R.string.box_browsesdk_create_folder_conflict;
-                    } else {
-
                     }
                 }
                 Toast.makeText(this, resId, Toast.LENGTH_LONG).show();

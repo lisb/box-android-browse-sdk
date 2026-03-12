@@ -1,5 +1,8 @@
 package com.box.androidsdk.browse.fragments;
 
+import static androidx.core.view.WindowInsetsCompat.Type.displayCutout;
+import static androidx.core.view.WindowInsetsCompat.Type.systemBars;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,7 +22,12 @@ import com.box.androidsdk.browse.models.BoxSearchFilters;
 
 import java.util.HashMap;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 /**
@@ -80,6 +88,17 @@ public class BoxFilterSearchResultsFragment extends Fragment {
         setup(view);
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        final View clearApplyBar = view.findViewById(R.id.clear_apply_bar);
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+            final Insets insets = windowInsets.getInsets(displayCutout() | systemBars());
+            clearApplyBar.setPadding(0, 0, 0, insets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     /**
